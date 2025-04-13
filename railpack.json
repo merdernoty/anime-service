@@ -1,0 +1,32 @@
+{
+    "schema": "v1",
+    "name": "anime-service",
+    "build": {
+      "builder": "golang",
+      "buildpacks": [
+        "heroku/go"
+      ],
+      "env": {
+        "GO_BUILD_CMD": "go build -o out ./cmd/api",
+        "GO_INSTALL_TOOLS": "true"
+      },
+      "path": "./",
+      "dockerfile": {
+        "enable": true,
+        "path": "Dockerfile"
+      }
+    },
+    "deploy": {
+      "type": "docker",
+      "port": 8080,
+      "healthcheck": {
+        "path": "/health",
+        "interval": 30,
+        "timeout": 10
+      }
+    },
+    "env": {
+      "GO_VERSION": "1.21",
+      "APP_ENV": "production"
+    }
+  }
