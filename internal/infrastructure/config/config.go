@@ -1,4 +1,3 @@
-// internal/infrastructure/config/config.go
 package config
 
 import (
