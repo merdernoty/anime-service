@@ -7,5 +7,5 @@ RUN go mod download
 # Затем копируем остальной код
 COPY . .
 # Компиляция
-RUN go build -o out ./cmd/api
+RUN go build -ldflags="-s -w" -o out ./cmd/api
 CMD ["./out"]
