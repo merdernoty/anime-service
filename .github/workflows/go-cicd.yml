@@ -64,6 +64,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         source: app
         target: "/opt/anime-service"
+        debug: true
 
     - name: Restart service
       uses: appleboy/ssh-action@master
@@ -71,6 +72,7 @@ jobs:
         host: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
+        debug: true
         script: |
           cd /opt/anime-service
           chmod +x app
