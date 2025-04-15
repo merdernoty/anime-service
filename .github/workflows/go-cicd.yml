@@ -56,6 +56,12 @@ jobs:
     - name: Make executable
       run: chmod +x app
 
+    - name: Print debug info
+      run: |
+      echo "SERVER_HOST: ${{ secrets.SERVER_HOST }}"
+      echo "SERVER_USER: ${{ secrets.SERVER_USER }}"
+      echo "SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}"
+
     - name: Deploy to server
       uses: appleboy/scp-action@master
       with:
