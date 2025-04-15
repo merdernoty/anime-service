@@ -1,8 +1,0 @@
-[phases.setup]
-nixpkgs = "go_1_24_1"
-
-[phases.build]
-cmds = ["go mod download", "go build -o main"]
-
-[start]
-cmd = "./main"
