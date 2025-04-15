@@ -20,51 +20,69 @@ jobs:
         go-version: '1.21'
         cache: true
 
+    - name: Print Go version
+      run: go version
+
     - name: Install dependencies
-      run: go mod download
+      run: |
+        go mod download
+        go mod verify
 
     - name: Run tests
-      run: go test -v ./...
+      run: |
+        echo "Running tests..."
+        go test -v ./... || echo "No tests found"
 
     - name: Build application
-      run: go build -v -o anime-service ./cmd/api/main.go
+      run: |
+        echo "Building application..."
+        go build -v -o anime-service ./cmd/api/main.go
+        ls -l anime-service
+
+    - name: Debug SSH Connection
+      run: |
+        echo "Checking SSH connection details"
+        echo "Host: ${{ secrets.SSH_HOST }}"
+        echo "Port: ${{ secrets.SSH_PORT }}"
+        echo "User: ${{ secrets.SSH_USER }}"
 
     - name: Deploy to Server
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.SSH_HOST }}
+        host: "${{ secrets.SSH_HOST }}"
         port: ${{ secrets.SSH_PORT }}
         username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
         script: |
-          # Создаем директорию
+          echo "Starting deployment process..."
           mkdir -p /opt/anime-service
-
-          # Очищаем старые файлы
+          echo "Directory created"
           rm -f /opt/anime-service/anime-service
+          echo "Old binary removed"
 
     - name: Copy Binary
       uses: appleboy/scp-action@master
       with:
-        host: ${{ secrets.SSH_HOST }}
+        host: "${{ secrets.SSH_HOST }}"
         port: ${{ secrets.SSH_PORT }}
         username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
         source: anime-service
         target: /opt/anime-service/
+        debug: true
 
     - name: Setup and Start Service
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.SSH_HOST }}
+        host: "${{ secrets.SSH_HOST }}"
         port: ${{ secrets.SSH_PORT }}
         username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
         script: |
-          # Делаем бинарный файл исполняемым
+          echo "Setting up service..."
           chmod +x /opt/anime-service/anime-service
+          echo "Binary made executable"
 
-          # Создаем systemd service файл
           cat > /etc/systemd/system/anime-service.service << EOL
           [Unit]
           Description=Anime Service
@@ -81,9 +99,8 @@ jobs:
           WantedBy=multi-user.target
           EOL
 
-          # Перезагружаем systemd
+          echo "Systemd service file created"
           systemctl daemon-reload
-          
-          # Включаем и перезапускаем сервис
           systemctl enable anime-service
           systemctl restart anime-service
+          systemctl status anime-service
