@@ -14,22 +14,12 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Detailed Network Diagnostics
+    - name: Resolve IPv6 to IP
       run: |
-        echo "Network configuration:"
-        ip -6 addr
-        echo "Resolving host manually:"
-        host ${{ secrets.SSH_HOST }} || true
-        echo "Checking DNS resolvers:"
-        cat /etc/resolv.conf
-        echo "Attempting direct ping:"
-        ping6 -c 4 "${{ secrets.SSH_HOST }}" || true
-
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.21'
-        cache: true
+        # Получаем IPv4 адрес
+        IPV4=$(dig +short ${{ secrets.SSH_HOST }})
+        echo "Resolved IP: $IPV4"
+        echo "RESOLVED_IP=$IPV4" >> $GITHUB_ENV
 
     - name: Build application
       run: go build -v -o anime-service ./cmd/api/main.go
@@ -37,35 +27,32 @@ jobs:
     - name: Deploy to Server
       uses: appleboy/ssh-action@master
       with:
-        host: "${{ secrets.SSH_HOST }}"
+        host: "${{ env.RESOLVED_IP }}"
         port: ${{ secrets.SSH_PORT }}
         username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
         script: |
-          echo "Deployment started"
           mkdir -p /opt/anime-service
           rm -f /opt/anime-service/anime-service
 
-    - name: Verbose Copy Binary
+    - name: Copy Binary
       uses: appleboy/scp-action@master
       with:
-        host: "${{ secrets.SSH_HOST }}"
+        host: "${{ env.RESOLVED_IP }}"
         port: ${{ secrets.SSH_PORT }}
         username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
         source: anime-service
         target: /opt/anime-service/
-        debug: true
 
     - name: Setup Service
       uses: appleboy/ssh-action@master
       with:
-        host: "${{ secrets.SSH_HOST }}"
+        host: "${{ env.RESOLVED_IP }}"
         port: ${{ secrets.SSH_PORT }}
         username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
         script: |
-          echo "Service setup started"
           chmod +x /opt/anime-service/anime-service
 
           cat > /etc/systemd/system/anime-service.service << EOL
@@ -87,4 +74,3 @@ jobs:
           systemctl daemon-reload
           systemctl enable anime-service
           systemctl restart anime-service
-          systemctl status anime-service
