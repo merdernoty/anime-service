@@ -1,14 +1,13 @@
-name: Go CI/CD
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
 
 jobs:
-  build:
-    name: Build and Test
+  build-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
@@ -18,85 +17,48 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.21'
-        cache: true
+        go-version: '1.24'
 
-    - name: Install dependencies
-      run: go mod download
-
-    - name: Lint
-      uses: golangci/golangci-lint-action@v3
-      with:
-        version: latest
-
-    - name: Run tests
-      run: go test -v ./...
-
-    - name: Build
-      run: go build -v -o app ./cmd/api/main.go
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: go-app
-        path: app
-
-  deploy:
-    name: Deploy
-    needs: build
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Download artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: go-app
-
-    - name: Make executable
-      run: chmod +x app
-
-    - name: Deploy to server
-      uses: appleboy/scp-action@master
-      with:
-      host: ${{ secrets.SSH_HOST }}
-      username: ${{ secrets.SSH_USER }}
-      password: ${{ secrets.SSH_PASSWORD }}
-
-    - name: Restart service
+    - name: Build on Server
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
-        debug: true
         script: |
+          # Создаем директорию для проекта
+          mkdir -p /opt/anime-service
+
+          # Клонируем репозиторий
           cd /opt/anime-service
-          chmod +x app
-          # Создаем директорию если её нет
-          mkdir -p /etc/systemd/system
-          # Создаем/обновляем файл systemd сервиса если нужно
-          if [ ! -f /etc/systemd/system/anime-service.service ]; then
-            cat > /etc/systemd/system/anime-service.service << 'EOL'
-            [Unit]
-            Description=Anime Service API
-            After=network.target
-            
-            [Service]
-            Type=simple
-            User=root
-            WorkingDirectory=/opt/anime-service
-            ExecStart=/opt/anime-service/app
-            Restart=on-failure
-            RestartSec=5
-            
-            [Install]
-            WantedBy=multi-user.target
-            EOL
-            
-            # Включаем сервис для автозапуска
-            systemctl enable anime-service.service
-          fi
-          # Перезапускаем сервис
+          git clone https://github.com/merdernoty/anime-service.git .
+          
+          # Устанавливаем Go если нужно
+          wget https://go.dev/dl/go1.24.linux-amd64.tar.gz
+          tar -C /usr/local -xzf go1.24.linux-amd64.tar.gz
+          export PATH=$PATH:/usr/local/go/bin
+
+          # Собираем проект
+          go mod download
+          go build -v -o anime-service ./cmd/api/main.go
+
+          # Создаем systemd service
+          cat > /etc/systemd/system/anime-service.service << EOL
+          [Unit]
+          Description=Anime Service
+          After=network.target
+
+          [Service]
+          Type=simple
+          WorkingDirectory=/opt/anime-service
+          ExecStart=/opt/anime-service/anime-service
+          Restart=on-failure
+
+          [Install]
+          WantedBy=multi-user.target
+          EOL
+
+          # Перезагружаем systemd и стартуем сервис
           systemctl daemon-reload
-          systemctl restart anime-service.service
+          systemctl enable anime-service
+          systemctl restart anime-service
