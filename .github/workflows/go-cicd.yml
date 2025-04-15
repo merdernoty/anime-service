@@ -1,11 +1,14 @@
-name: Deploy
+name: Go CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
-  deploy:
+  build:
+    name: Build and Test
     runs-on: ubuntu-latest
     
     steps:
@@ -15,40 +18,88 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.24'
+        go-version: '1.21'
+        cache: true
 
-    - name: Build Application
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Lint
+      uses: golangci/golangci-lint-action@v3
+      with:
+        version: latest
+
+    - name: Run tests
+      run: go test -v ./...
+
+    - name: Build
       run: go build -v -o app ./cmd/api/main.go
 
-    - name: Test SSH Connection
-      uses: appleboy/ssh-action@master
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
       with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        password: ${{ secrets.SSH_PASSWORD }}
-        script: |
-          echo "SSH connection successful"
-          mkdir -p /opt/anime-service
+        name: go-app
+        path: app
 
-    - name: Deploy via SCP
+  deploy:
+    name: Deploy
+    needs: build
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: go-app
+
+    - name: Make executable
+      run: chmod +x app
+
+    - name: Deploy to server
       uses: appleboy/scp-action@master
       with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SSH_USER }}
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SHH_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
-        source: "app"
+        source: app
         target: "/opt/anime-service"
-        timeout: 300s
-        command_timeout: 300s
         debug: true
 
-    - name: Restart Service
+    - name: Restart service
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
+        debug: true
         script: |
           cd /opt/anime-service
           chmod +x app
-          systemctl restart anime-service
+          # Создаем директорию если её нет
+          mkdir -p /etc/systemd/system
+          # Создаем/обновляем файл systemd сервиса если нужно
+          if [ ! -f /etc/systemd/system/anime-service.service ]; then
+            cat > /etc/systemd/system/anime-service.service << 'EOL'
+            [Unit]
+            Description=Anime Service API
+            After=network.target
+            
+            [Service]
+            Type=simple
+            User=root
+            WorkingDirectory=/opt/anime-service
+            ExecStart=/opt/anime-service/app
+            Restart=on-failure
+            RestartSec=5
+            
+            [Install]
+            WantedBy=multi-user.target
+            EOL
+            
+            # Включаем сервис для автозапуска
+            systemctl enable anime-service.service
+          fi
+          # Перезапускаем сервис
+          systemctl daemon-reload
+          systemctl restart anime-service.service
