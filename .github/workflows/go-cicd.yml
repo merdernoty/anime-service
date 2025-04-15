@@ -14,18 +14,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Detailed Network Diagnostics
+      run: |
+        echo "Network configuration:"
+        ip -6 addr
+        echo "Resolving host manually:"
+        host ${{ secrets.SSH_HOST }} || true
+        echo "Checking DNS resolvers:"
+        cat /etc/resolv.conf
+        echo "Attempting direct ping:"
+        ping6 -c 4 "${{ secrets.SSH_HOST }}" || true
+
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
         go-version: '1.21'
         cache: true
-
-    - name: Network Diagnostics
-      run: |
-        echo "Resolving IPv6 address..."
-        dig ${{ secrets.SSH_HOST }}
-        echo "Ping test..."
-        ping6 -c 4 ${{ secrets.SSH_HOST }}
 
     - name: Build application
       run: go build -v -o anime-service ./cmd/api/main.go
@@ -33,20 +37,19 @@ jobs:
     - name: Deploy to Server
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.SSH_HOST }}
+        host: "${{ secrets.SSH_HOST }}"
         port: ${{ secrets.SSH_PORT }}
         username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
-        command_timeout: 30m
         script: |
-          echo "Starting deployment..."
+          echo "Deployment started"
           mkdir -p /opt/anime-service
           rm -f /opt/anime-service/anime-service
 
-    - name: Copy Binary
+    - name: Verbose Copy Binary
       uses: appleboy/scp-action@master
       with:
-        host: ${{ secrets.SSH_HOST }}
+        host: "${{ secrets.SSH_HOST }}"
         port: ${{ secrets.SSH_PORT }}
         username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
@@ -54,16 +57,15 @@ jobs:
         target: /opt/anime-service/
         debug: true
 
-    - name: Setup and Start Service
+    - name: Setup Service
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.SSH_HOST }}
+        host: "${{ secrets.SSH_HOST }}"
         port: ${{ secrets.SSH_PORT }}
         username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
-        command_timeout: 30m
         script: |
-          echo "Setting up service..."
+          echo "Service setup started"
           chmod +x /opt/anime-service/anime-service
 
           cat > /etc/systemd/system/anime-service.service << EOL
