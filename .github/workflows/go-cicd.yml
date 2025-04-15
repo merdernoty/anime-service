@@ -59,12 +59,9 @@ jobs:
     - name: Deploy to server
       uses: appleboy/scp-action@master
       with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SHH_USER }}
-        password: ${{ secrets.SSH_PASSWORD }}
-        source: app
-        target: "/opt/anime-service"
-        debug: true
+      host: ${{ secrets.SSH_HOST }}
+      username: ${{ secrets.SSH_USER }}
+      password: ${{ secrets.SSH_PASSWORD }}
 
     - name: Restart service
       uses: appleboy/ssh-action@master
