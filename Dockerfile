@@ -1,8 +1,15 @@
-FROM golang:1.24-alpine
+FROM golang:1.24-alpine AS builder
+
 WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+
 COPY . .
-RUN ls -la
-RUN go version
-RUN go mod tidy
-RUN go build -v -o out ./cmd/api
-CMD ["./out"]
+RUN go build -o out ./cmd/api
+
+FROM alpine:latest
+
+WORKDIR /app
+COPY --from=builder /app/out .
+
+ENV PORT=8080
