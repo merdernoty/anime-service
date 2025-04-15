@@ -4,7 +4,6 @@ on:
   push:
     branches: [ main, master ]
   pull_request:
-  
     branches: [ main, master ]
 
 jobs:
@@ -18,32 +17,54 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.24'
+        go-version: '1.21'
+        cache: true
 
-    - name: Build on Server
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Run tests
+      run: go test -v ./...
+
+    - name: Build application
+      run: go build -v -o anime-service ./cmd/api/main.go
+
+    - name: Deploy to Server
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.SSH_HOST }}
+        port: ${{ secrets.SSH_PORT }}
         username: ${{ secrets.SSH_USER }}
         password: ${{ secrets.SSH_PASSWORD }}
         script: |
-          # Создаем директорию для проекта
+          # Создаем директорию
           mkdir -p /opt/anime-service
 
-          # Клонируем репозиторий
-          cd /opt/anime-service
-          git clone https://github.com/merdernoty/anime-service.git .
-          
-          # Устанавливаем Go если нужно
-          wget https://go.dev/dl/go1.24.linux-amd64.tar.gz
-          tar -C /usr/local -xzf go1.24.linux-amd64.tar.gz
-          export PATH=$PATH:/usr/local/go/bin
+          # Очищаем старые файлы
+          rm -f /opt/anime-service/anime-service
 
-          # Собираем проект
-          go mod download
-          go build -v -o anime-service ./cmd/api/main.go
+    - name: Copy Binary
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        port: ${{ secrets.SSH_PORT }}
+        username: ${{ secrets.SSH_USER }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        source: anime-service
+        target: /opt/anime-service/
 
-          # Создаем systemd service
+    - name: Setup and Start Service
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        port: ${{ secrets.SSH_PORT }}
+        username: ${{ secrets.SSH_USER }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        script: |
+          # Делаем бинарный файл исполняемым
+          chmod +x /opt/anime-service/anime-service
+
+          # Создаем systemd service файл
           cat > /etc/systemd/system/anime-service.service << EOL
           [Unit]
           Description=Anime Service
@@ -54,12 +75,15 @@ jobs:
           WorkingDirectory=/opt/anime-service
           ExecStart=/opt/anime-service/anime-service
           Restart=on-failure
+          User=root
 
           [Install]
           WantedBy=multi-user.target
           EOL
 
-          # Перезагружаем systemd и стартуем сервис
+          # Перезагружаем systemd
           systemctl daemon-reload
+          
+          # Включаем и перезапускаем сервис
           systemctl enable anime-service
           systemctl restart anime-service
