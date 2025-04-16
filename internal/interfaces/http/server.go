@@ -10,9 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/merdernoty/anime-service/internal/infrastructure/config"
-	"github.com/merdernoty/anime-service/internal/interfaces/http/routes"
+"github.com/gin-gonic/gin"
+"github.com/merdernoty/anime-service/internal/infrastructure/config"
+"github.com/merdernoty/anime-service/internal/interfaces/http/controllers"
+"github.com/merdernoty/anime-service/internal/interfaces/http/routes"
 )
 type Server struct {
     router     *gin.Engine
@@ -22,6 +23,7 @@ type Server struct {
 
 func NewServer(
     config *config.Config,
+    authConttroler *controllers.AuthController,
     // userController *controllers.UserController,
     // authMiddleware middleware.AuthMiddleware,
 ) *Server {
@@ -29,7 +31,10 @@ func NewServer(
     
     router.Use(gin.Recovery())
     // Настройка маршрутов
-    routes.SetupRoutes(router)
+    service := &routes.Service{
+        AuthController: authConttroler,
+    }
+    routes.SetupRoutes(router, service)
     
     // Создание HTTP-сервера
     httpServer := &http.Server{

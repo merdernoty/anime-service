@@ -51,10 +51,8 @@ type LoggerConfig struct {
 }
 
 type AuthConfig struct {
-	JWTSecret              string        // Секретный ключ для JWT
-	AccessTokenExpiration  time.Duration // Время жизни access token
-	RefreshTokenExpiration time.Duration // Время жизни refresh token
-	TokenIssuer            string        // Издатель токена
+	SecretKey      string        
+	TokenDuration  time.Duration 
 }
 
 type CacheConfig struct {
@@ -119,10 +117,8 @@ func Load() (*Config, error) {
 			ReportCaller: getEnvAsBool("LOG_REPORT_CALLER", false),
 		},
 		Auth: AuthConfig{
-			JWTSecret:              getEnv("AUTH_JWT_SECRET", "your-secret-key"),
-			AccessTokenExpiration:  getEnvAsDuration("AUTH_ACCESS_TOKEN_EXPIRATION", 15*time.Minute),
-			RefreshTokenExpiration: getEnvAsDuration("AUTH_REFRESH_TOKEN_EXPIRATION", 7*24*time.Hour),
-			TokenIssuer:            getEnv("AUTH_TOKEN_ISSUER", "anime-service"),
+			SecretKey:              getEnv("SECRET_KEY", "your-secret-key"),
+			TokenDuration:  getEnvAsDuration("TOKEN_DURATION", 60*time.Minute),
 		},
 		Cache: CacheConfig{
 			Driver:            getEnv("CACHE_DRIVER", "memory"),

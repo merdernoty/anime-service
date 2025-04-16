@@ -5,10 +5,15 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/merdernoty/anime-service/internal/application/services"
+	"github.com/merdernoty/anime-service/internal/domain/models"
 	"github.com/merdernoty/anime-service/internal/infrastructure/config"
 	"github.com/merdernoty/anime-service/internal/infrastructure/database"
 	"github.com/merdernoty/anime-service/internal/infrastructure/log"
+	"github.com/merdernoty/anime-service/internal/infrastructure/repositories"
 	httpServer "github.com/merdernoty/anime-service/internal/interfaces/http"
+	"github.com/merdernoty/anime-service/internal/interfaces/http/controllers"
+	"github.com/merdernoty/anime-service/pkg/auth"
 )
 
 func main() {
@@ -33,33 +38,39 @@ func main() {
 		os.Exit(1)
 	}
 	defer func() {
-		if err := db.Close(); err != nil {
+		if err := database.CloseDB(db); err != nil {
 			logger.Error("Error closing database connection", map[string]interface{}{"error": err.Error()})
 		}
 	}()
+	if err := database.AutoMigrate(db, 
+        &models.User{},
+    ); err != nil {
+        logger.Error("Failed to auto-migrate database schema", map[string]interface{}{"error": err.Error()})
+        os.Exit(1)
+    }
 
 	if cfg.App.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	// userRepo := postgres.NewUserRepository(db)
-	// animeRepo := postgres.NewAnimeRepository(db)
+	userRepo := repositories.NewUserRepository(db)
 
-	// userService := services.NewUserService(userRepo, logger)
-	// animeService := services.NewAnimeService(animeRepo, logger)
+	tokenMaker := auth.NewJWTTokenMaker(
+		cfg.Auth.SecretKey, 
+		cfg.Auth.TokenDuration,
+	)
 
-	// authMiddleware := middleware.NewAuthMiddleware(cfg.Auth)
-	// loggerMiddleware := middleware.NewLoggerMiddleware(logger)
+	authService := services.NewAuthService(
+		userRepo, 
+		logger,
+		tokenMaker,
+	)
 
-	// userController := controllers.NewUserController(userService)
-	// animeController := controllers.NewAnimeController(animeService)
+	authController := controllers.NewAuthController(authService)
 
 	server := httpServer.NewServer(
 		cfg,
-		// userController,
-		// animeController,
-		// authMiddleware,
-		// loggerMiddleware,
+		authController,
 	)
 
 	logger.Info("Starting server", map[string]interface{}{
