@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -38,6 +39,19 @@ func handleError(ctx *gin.Context, err error) {
 	}
 }
 
+
+// Register godoc
+// @Summary Регистрация нового пользователя
+// @Description Создает нового пользователя в системе
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body dtos.CreateUserDTO true "Данные для регистрации"
+// @Success 201 {object} dtos.UserResponseDTO "Успешная регистрация"
+// @Failure 400 {object} dtos.ErrorResponse "Ошибка валидации"
+// @Failure 409 {object} dtos.ErrorResponse "Пользователь уже существует"
+// @Failure 500 {object} dtos.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /auth/register [post]
 func (c *AuthController) Register(ctx *gin.Context) {
 	var dto dtos.CreateUserDTO
 	if err := ctx.ShouldBindJSON(&dto); err != nil {
@@ -45,15 +59,29 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		return
 	}
 
-	user, err := c.authService.Register(ctx, dto)
+	tokenResponse, err := c.authService.Register(ctx, dto)
 	if err != nil {
+		fmt.Print(err)
 		handleError(ctx, err)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, dtos.ToUserResponse(user))
+	ctx.JSON(http.StatusCreated, tokenResponse)
 }
 
+
+// Login godoc
+// @Summary Аутентификация пользователя
+// @Description Выполняет вход в систему и возвращает токены
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body dtos.LoginDTO true "Учетные данные для входа"
+// @Success 200 {object} dtos.TokenResponseDTO "Успешная аутентификация"
+// @Failure 400 {object} dtos.ErrorResponse "Ошибка валидации"
+// @Failure 401 {object} dtos.ErrorResponse "Неверные учетные данные"
+// @Failure 500 {object} dtos.ErrorResponse "Внутренняя ошибка сервера"
+// @Router /auth/login [post]
 func (c *AuthController) Login(ctx *gin.Context) {
 	var dto dtos.LoginDTO
 	if err := ctx.ShouldBindJSON(&dto); err != nil {

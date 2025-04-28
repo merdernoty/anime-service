@@ -31,15 +31,15 @@ func NewAuthService(repo repositories.UserRepository, logger logur.LoggerFacade,
 	}
 }
 
-func (s *AuthServiceImpl) Register(ctx context.Context, dto dtos.CreateUserDTO) (models.User, error) {
+func (s *AuthServiceImpl) Register(ctx context.Context, dto dtos.CreateUserDTO) (dtos.TokenResponseDTO, error) {
 	_, err := s.repo.GetByEmail(ctx, dto.Email)
-	if err != nil {
-		return models.User{}, ErrUserAlreadyExists
+	if err == nil {
+		return dtos.TokenResponseDTO{}, ErrUserAlreadyExists
 	}
 
 	_, err = s.repo.GetByNickName(ctx, dto.NickName)
 	if err == nil {
-		return models.User{}, ErrUserNicknameExists
+		return dtos.TokenResponseDTO{}, ErrUserNicknameExists
 	}
 
 	user := models.User{
@@ -51,24 +51,35 @@ func (s *AuthServiceImpl) Register(ctx context.Context, dto dtos.CreateUserDTO) 
 	}
 
 	if err := user.HashPassword(); err != nil {
-		return models.User{}, errors.Wrap(err, "failed to hash password")
+		return dtos.TokenResponseDTO{}, errors.Wrap(err, "failed to hash password")
 	}
+
 	createdUser, err := s.repo.Create(ctx, user)
 	if err != nil {
-		return models.User{}, errors.Wrap(err, "failed to create user")
+		return dtos.TokenResponseDTO{}, errors.Wrap(err, "failed to create user")
 	}
+
 	s.logger.Info("user registered successfully", map[string]interface{}{
 		"NickName": user.Nickname,
 		"Email":    user.Email,
 	})
+
 	createdUser.Password = ""
 
-	return createdUser, nil
-}
+	token, err := s.tokenMaker.CreateToken(user.ID, user.Nickname, user.Email)
+	if err != nil {
+		return dtos.TokenResponseDTO{}, errors.Wrap(err, "failed to create token")
+	}
 
+	return dtos.TokenResponseDTO{
+		AccessToken: token,
+		TokenType:   "Bearer",
+		ExpiresIn:    3600,
+	}, nil
+}
 func (s *AuthServiceImpl) Login(ctx context.Context, dto dtos.LoginDTO) (dtos.TokenResponseDTO, error) {
 	user, err := s.repo.GetByEmail(ctx, dto.Email)
-	
+
 	if err != nil {
 		return dtos.TokenResponseDTO{}, ErrUserNotFound
 	}
@@ -90,6 +101,8 @@ func (s *AuthServiceImpl) Login(ctx context.Context, dto dtos.LoginDTO) (dtos.To
 	user.Password = ""
 	return dtos.TokenResponseDTO{
 		AccessToken: token,
+		TokenType:   "Bearer",
+		ExpiresIn:    3600, 
 	}, nil
 
 }

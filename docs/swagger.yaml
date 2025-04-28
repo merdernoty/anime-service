@@ -1,0 +1,169 @@
+basePath: /api/
+definitions:
+  dtos.CreateUserDTO:
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      first_name:
+        example: John
+        type: string
+      last_name:
+        example: Doe
+        type: string
+      nick_name:
+        example: johndoe123
+        minLength: 6
+        type: string
+      password:
+        example: StrongPass123!
+        minLength: 6
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - nick_name
+    - password
+    type: object
+  dtos.ErrorResponse:
+    properties:
+      code:
+        example: 400
+        type: integer
+      message:
+        example: Invalid input
+        type: string
+    type: object
+  dtos.LoginDTO:
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      nickname:
+        example: johndoe123
+        type: string
+      password:
+        example: StrongPass123!
+        type: string
+    required:
+    - password
+    type: object
+  dtos.TokenResponseDTO:
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      expires_in:
+        example: 3600
+        type: integer
+      refresh_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      token_type:
+        example: Bearer
+        type: string
+    type: object
+  dtos.UserResponseDTO:
+    properties:
+      avatar_url:
+        example: https://example.com/avatar.jpg
+        type: string
+      created_at:
+        example: "2024-04-28T10:30:00Z"
+        type: string
+      email:
+        example: john.doe@example.com
+        type: string
+      firstname:
+        example: John
+        type: string
+      id:
+        example: 1
+        type: integer
+      lastname:
+        example: Doe
+        type: string
+      nickname:
+        example: johndoe123
+        type: string
+      updated_at:
+        example: "2024-04-28T10:30:00Z"
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API для сервиса аниме
+  title: Anime Service API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Выполняет вход в систему и возвращает токены
+      parameters:
+      - description: Учетные данные для входа
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.LoginDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешная аутентификация
+          schema:
+            $ref: '#/definitions/dtos.TokenResponseDTO'
+        "400":
+          description: Ошибка валидации
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "401":
+          description: Неверные учетные данные
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Аутентификация пользователя
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового пользователя в системе
+      parameters:
+      - description: Данные для регистрации
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.CreateUserDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Успешная регистрация
+          schema:
+            $ref: '#/definitions/dtos.UserResponseDTO'
+        "400":
+          description: Ошибка валидации
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "409":
+          description: Пользователь уже существует
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Регистрация нового пользователя
+      tags:
+      - auth
+swagger: "2.0"

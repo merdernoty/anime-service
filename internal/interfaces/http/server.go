@@ -14,6 +14,10 @@ import (
 "github.com/merdernoty/anime-service/internal/infrastructure/config"
 "github.com/merdernoty/anime-service/internal/interfaces/http/controllers"
 "github.com/merdernoty/anime-service/internal/interfaces/http/routes"
+swaggerFiles "github.com/swaggo/files"
+ginSwagger "github.com/swaggo/gin-swagger"
+
+_ "github.com/merdernoty/anime-service/docs"
 )
 type Server struct {
     router     *gin.Engine
@@ -28,7 +32,9 @@ func NewServer(
     // authMiddleware middleware.AuthMiddleware,
 ) *Server {
     router := gin.New()
-    
+    if config.App.Environment == "development" {
+        router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+    }
     router.Use(gin.Recovery())
     // Настройка маршрутов
     service := &routes.Service{
@@ -67,6 +73,7 @@ func (s *Server) Start() error {
     log.Println("Shutting down server...")
     ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
     defer cancel()
+    
     
     if err := s.httpServer.Shutdown(ctx); err != nil {
         log.Fatalf("Server forced to shutdown: %v", err)

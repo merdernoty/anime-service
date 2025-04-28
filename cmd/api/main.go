@@ -16,6 +16,11 @@ import (
 	"github.com/merdernoty/anime-service/pkg/auth"
 )
 
+// @title           Anime Service API
+// @version         1.0
+// @description     API для сервиса аниме
+// @host            localhost:8080
+// @BasePath        /api/
 func main() {
 	cfg, err := config.Load()
 	if err != nil {

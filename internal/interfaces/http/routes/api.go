@@ -15,7 +15,7 @@ func SetupRoutes(
 ) {
     api := router.Group("/api")
 
-    public := api.Group("/public")
+    public := api.Group("")
     {
         public.POST("/auth/register", service.AuthController.Register)
         public.POST("/auth/login", service.AuthController.Login)
