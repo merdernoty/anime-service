@@ -5,13 +5,13 @@ definitions:
       email:
         example: john.doe@example.com
         type: string
-      first_name:
+      firstname:
         example: John
         type: string
-      last_name:
+      lastname:
         example: Doe
         type: string
-      nick_name:
+      nickname:
         example: johndoe123
         minLength: 6
         type: string
@@ -21,9 +21,9 @@ definitions:
         type: string
     required:
     - email
-    - first_name
-    - last_name
-    - nick_name
+    - firstname
+    - lastname
+    - nickname
     - password
     type: object
   dtos.ErrorResponse:

@@ -3,9 +3,9 @@ package dtos
 import "time"
 
 type CreateUserDTO struct {
-	NickName  string `json:"nick_name" validate:"required,min=6" example:"johndoe123" swaggertype:"string"`
-	FirstName string `json:"first_name" validate:"required" example:"John" swaggertype:"string"`
-	LastName  string `json:"last_name" validate:"required" example:"Doe" swaggertype:"string"`
+	NickName  string `json:"nickname" validate:"required,min=6" example:"johndoe123" swaggertype:"string"`
+	FirstName string `json:"firstname" validate:"required" example:"John" swaggertype:"string"`
+	LastName  string `json:"lastname" validate:"required" example:"Doe" swaggertype:"string"`
 	Email     string `json:"email" validate:"required,email,unique" example:"john.doe@example.com" swaggertype:"string"`
 	Password  string `json:"password" validate:"required,min=6" example:"StrongPass123!" swaggertype:"string"`
 }

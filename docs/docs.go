@@ -125,9 +125,9 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
-                "first_name",
-                "last_name",
-                "nick_name",
+                "firstname",
+                "lastname",
+                "nickname",
                 "password"
             ],
             "properties": {
@@ -135,15 +135,15 @@ const docTemplate = `{
                     "type": "string",
                     "example": "john.doe@example.com"
                 },
-                "first_name": {
+                "firstname": {
                     "type": "string",
                     "example": "John"
                 },
-                "last_name": {
+                "lastname": {
                     "type": "string",
                     "example": "Doe"
                 },
-                "nick_name": {
+                "nickname": {
                     "type": "string",
                     "minLength": 6,
                     "example": "johndoe123"
