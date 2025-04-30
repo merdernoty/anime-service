@@ -10,14 +10,15 @@ import (
 	"syscall"
 	"time"
 
-"github.com/gin-gonic/gin"
-"github.com/merdernoty/anime-service/internal/infrastructure/config"
-"github.com/merdernoty/anime-service/internal/interfaces/http/controllers"
-"github.com/merdernoty/anime-service/internal/interfaces/http/routes"
-swaggerFiles "github.com/swaggo/files"
-ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/gin-gonic/gin"
+	"github.com/merdernoty/anime-service/internal/infrastructure/config"
+	"github.com/merdernoty/anime-service/internal/interfaces/http/controllers"
+	"github.com/merdernoty/anime-service/internal/interfaces/http/middleware"
+	"github.com/merdernoty/anime-service/internal/interfaces/http/routes"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
-_ "github.com/merdernoty/anime-service/docs"
+	_ "github.com/merdernoty/anime-service/docs"
 )
 type Server struct {
     router     *gin.Engine
@@ -28,19 +29,19 @@ type Server struct {
 func NewServer(
     config *config.Config,
     authConttroler *controllers.AuthController,
-    // userController *controllers.UserController,
-    // authMiddleware middleware.AuthMiddleware,
+    animeController *controllers.AnimeController,
+    authMiddleware middleware.AuthMiddleware,
 ) *Server {
     router := gin.New()
     if config.App.Environment == "development" {
         router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
     }
     router.Use(gin.Recovery())
-    // Настройка маршрутов
     service := &routes.Service{
         AuthController: authConttroler,
+        AnimeController: animeController,
     }
-    routes.SetupRoutes(router, service)
+    routes.SetupRoutes(router, service, &authMiddleware)
     
     // Создание HTTP-сервера
     httpServer := &http.Server{

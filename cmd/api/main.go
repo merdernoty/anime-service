@@ -7,20 +7,27 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/merdernoty/anime-service/internal/application/services"
 	"github.com/merdernoty/anime-service/internal/domain/models"
+	"github.com/merdernoty/anime-service/internal/infrastructure/api"
 	"github.com/merdernoty/anime-service/internal/infrastructure/config"
 	"github.com/merdernoty/anime-service/internal/infrastructure/database"
 	"github.com/merdernoty/anime-service/internal/infrastructure/log"
 	"github.com/merdernoty/anime-service/internal/infrastructure/repositories"
 	httpServer "github.com/merdernoty/anime-service/internal/interfaces/http"
 	"github.com/merdernoty/anime-service/internal/interfaces/http/controllers"
+	"github.com/merdernoty/anime-service/internal/interfaces/http/middleware"
+	"github.com/merdernoty/anime-service/internal/interfaces/http/routes"
 	"github.com/merdernoty/anime-service/pkg/auth"
 )
 
 // @title           Anime Service API
 // @version         1.0
-// @description     API для сервиса аниме
+// @description     API для сервиса аниме и управления пользовательскими списками
 // @host            localhost:8080
 // @BasePath        /api/
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Введите токен в формате: Bearer {token}
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
@@ -47,8 +54,11 @@ func main() {
 			logger.Error("Error closing database connection", map[string]interface{}{"error": err.Error()})
 		}
 	}()
+    
+	// Автомиграция моделей
 	if err := database.AutoMigrate(db, 
         &models.User{},
+        &models.UserAnime{},
     ); err != nil {
         logger.Error("Failed to auto-migrate database schema", map[string]interface{}{"error": err.Error()})
         os.Exit(1)
@@ -59,6 +69,14 @@ func main() {
 	}
 
 	userRepo := repositories.NewUserRepository(db)
+	sqlDB, err := db.DB()
+	if err != nil {
+		logger.Error("Failed to get *sql.DB from *gorm.DB", map[string]interface{}{"error": err.Error()})
+		os.Exit(1)
+	}
+	userAnimeRepo := repositories.NewUserAnimeRepository(sqlDB, logger)
+
+	jikanClient := api.NewJikanClient(logger)
 
 	tokenMaker := auth.NewJWTTokenMaker(
 		cfg.Auth.SecretKey, 
@@ -71,11 +89,33 @@ func main() {
 		tokenMaker,
 	)
 
+	animeService := services.NewAnimeService(
+		jikanClient,
+		userAnimeRepo,
+		logger,
+	)
+	
+	authMiddleware := middleware.NewAuthMiddleware(tokenMaker, userRepo)
 	authController := controllers.NewAuthController(authService)
+	animeController := controllers.NewAnimeController(*animeService, logger)
+
+	router := gin.Default()
+	
+	
+	routes.SetupRoutes(
+		router, 
+		routes.NewService(
+			authController,
+			animeController,
+		),
+		authMiddleware,
+	)
 
 	server := httpServer.NewServer(
 		cfg,
 		authController,
+		animeController,
+		*authMiddleware,
 	)
 
 	logger.Info("Starting server", map[string]interface{}{

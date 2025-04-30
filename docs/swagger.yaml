@@ -1,5 +1,83 @@
 basePath: /api/
 definitions:
+  dtos.AddAnimeRequest:
+    properties:
+      anime_mal_id:
+        example: 5114
+        type: integer
+      status:
+        allOf:
+        - $ref: '#/definitions/models.WatchStatus'
+        example: watching
+    required:
+    - anime_mal_id
+    - status
+    type: object
+  dtos.AnimeListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dtos.AnimeResponse'
+        type: array
+      limit:
+        example: 10
+        type: integer
+      page:
+        example: 1
+        type: integer
+      total_pages:
+        example: 50
+        type: integer
+    type: object
+  dtos.AnimeResponse:
+    properties:
+      airing:
+        example: false
+        type: boolean
+      episodes:
+        example: 64
+        type: integer
+      genres:
+        items:
+          $ref: '#/definitions/dtos.GenreObject'
+        type: array
+      image_url:
+        example: https://cdn.myanimelist.net/images/anime/1223/96541.jpg
+        type: string
+      mal_id:
+        example: 5114
+        type: integer
+      popularity:
+        example: 3
+        type: integer
+      rank:
+        example: 1
+        type: integer
+      score:
+        example: 9.16
+        type: number
+      source:
+        example: Manga
+        type: string
+      status:
+        example: Finished Airing
+        type: string
+      synopsis:
+        example: After a terrible alchemy experiment gone wrong...
+        type: string
+      title:
+        example: 'Fullmetal Alchemist: Brotherhood'
+        type: string
+      title_english:
+        example: 'Fullmetal Alchemist: Brotherhood'
+        type: string
+      title_japanese:
+        example: 鋼の錬金術師 FULLMETAL ALCHEMIST
+        type: string
+      type:
+        example: TV
+        type: string
+    type: object
   dtos.CreateUserDTO:
     properties:
       email:
@@ -35,6 +113,15 @@ definitions:
         example: Invalid input
         type: string
     type: object
+  dtos.GenreObject:
+    properties:
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Action
+        type: string
+    type: object
   dtos.LoginDTO:
     properties:
       email:
@@ -48,6 +135,27 @@ definitions:
         type: string
     required:
     - password
+    type: object
+  dtos.StatsResponse:
+    properties:
+      average_rating:
+        example: 8.75
+        type: number
+      total_episodes:
+        example: 347
+        type: integer
+      total_plan_to_watch:
+        example: 30
+        type: integer
+      total_waiting:
+        example: 10
+        type: integer
+      total_watched:
+        example: 15
+        type: integer
+      total_watching:
+        example: 5
+        type: integer
     type: object
   dtos.TokenResponseDTO:
     properties:
@@ -63,6 +171,92 @@ definitions:
       token_type:
         example: Bearer
         type: string
+    type: object
+  dtos.UpdateEpisodesRequest:
+    properties:
+      episodes_watched:
+        example: 24
+        type: integer
+    required:
+    - episodes_watched
+    type: object
+  dtos.UpdateRatingRequest:
+    properties:
+      rating:
+        example: 9.5
+        maximum: 10
+        minimum: 0
+        type: number
+    required:
+    - rating
+    type: object
+  dtos.UpdateStatusRequest:
+    properties:
+      status:
+        allOf:
+        - $ref: '#/definitions/models.WatchStatus'
+        example: watched
+    required:
+    - status
+    type: object
+  dtos.UserAnimeListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dtos.UserAnimeResponse'
+        type: array
+      limit:
+        example: 10
+        type: integer
+      page:
+        example: 1
+        type: integer
+      total_count:
+        example: 42
+        type: integer
+    type: object
+  dtos.UserAnimeResponse:
+    properties:
+      anime_episodes:
+        example: 64
+        type: integer
+      anime_image:
+        example: https://cdn.myanimelist.net/images/anime/1223/96541.jpg
+        type: string
+      anime_mal_id:
+        example: 5114
+        type: integer
+      anime_score:
+        example: 9.16
+        type: number
+      anime_status:
+        example: Finished Airing
+        type: string
+      anime_title:
+        example: 'Fullmetal Alchemist: Brotherhood'
+        type: string
+      anime_type:
+        example: TV
+        type: string
+      episodes_watched:
+        example: 24
+        type: integer
+      id:
+        example: 1
+        type: integer
+      notes:
+        example: My favorite anime!
+        type: string
+      rating:
+        example: 9.5
+        type: number
+      status:
+        allOf:
+        - $ref: '#/definitions/models.WatchStatus'
+        example: watching
+      user_id:
+        example: 42
+        type: integer
     type: object
   dtos.UserResponseDTO:
     properties:
@@ -91,13 +285,236 @@ definitions:
         example: "2024-04-28T10:30:00Z"
         type: string
     type: object
+  models.WatchStatus:
+    enum:
+    - watched
+    - plan_to_watch
+    - watching
+    - waiting
+    type: string
+    x-enum-varnames:
+    - StatusWatched
+    - StatusPlanToWatch
+    - StatusWatching
+    - StatusWaiting
 host: localhost:8080
 info:
   contact: {}
-  description: API для сервиса аниме
+  description: API для сервиса аниме и управления пользовательскими списками
   title: Anime Service API
   version: "1.0"
 paths:
+  /anime/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Получает детальную информацию об аниме по его MAL ID
+      parameters:
+      - description: MAL ID аниме
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.AnimeResponse'
+        "400":
+          description: Неверный ID аниме
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Аниме не найдено
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить информацию об аниме по его ID
+      tags:
+      - anime
+  /anime/{id}/recommendations:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список рекомендаций аниме на основе указанного MAL ID
+      parameters:
+      - description: MAL ID аниме для получения рекомендаций
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 1
+        description: Номер страницы
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Количество результатов на странице
+        in: query
+        maximum: 50
+        minimum: 1
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.AnimeListResponse'
+        "400":
+          description: Неверный ID аниме
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить рекомендации аниме
+      tags:
+      - anime
+  /anime/search:
+    get:
+      consumes:
+      - application/json
+      description: Выполняет поиск аниме по заданному запросу с пагинацией
+      parameters:
+      - description: Поисковый запрос
+        in: query
+        name: query
+        required: true
+        type: string
+      - default: 1
+        description: Номер страницы
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Количество результатов на странице
+        in: query
+        maximum: 50
+        minimum: 1
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.AnimeListResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Поиск аниме по запросу
+      tags:
+      - anime
+  /anime/seasonal/{year}/{season}:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список аниме для указанного сезона и года
+      parameters:
+      - description: Год (например, 2023)
+        in: path
+        name: year
+        required: true
+        type: string
+      - description: Сезон (winter, spring, summer, fall)
+        in: path
+        name: season
+        required: true
+        type: string
+      - default: 1
+        description: Номер страницы
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Количество результатов на странице
+        in: query
+        maximum: 50
+        minimum: 1
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.AnimeListResponse'
+        "400":
+          description: Неверные параметры запроса
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить список сезонных аниме
+      tags:
+      - anime
+  /anime/top:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список популярных аниме с пагинацией
+      parameters:
+      - default: 1
+        description: Номер страницы
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Количество результатов на странице
+        in: query
+        maximum: 50
+        minimum: 1
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.AnimeListResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить список популярных аниме
+      tags:
+      - anime
   /auth/login:
     post:
       consumes:
@@ -166,4 +583,342 @@ paths:
       summary: Регистрация нового пользователя
       tags:
       - auth
+  /users/{user_id}/anime:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список аниме пользователя с возможностью фильтрации
+        по статусу
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: Статус аниме (watched, plan_to_watch, watching, waiting)
+        in: query
+        name: status
+        type: string
+      - default: 1
+        description: Номер страницы
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 10
+        description: Количество результатов на странице
+        in: query
+        maximum: 50
+        minimum: 1
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dtos.UserAnimeListResponse'
+        "400":
+          description: Неверный ID пользователя
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить список аниме пользователя
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Добавляет аниме в список пользователя с указанным статусом
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: Информация о добавляемом аниме
+        in: body
+        name: anime
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.AddAnimeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Успешное добавление
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Неверные входные данные
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Аниме не найдено
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Добавить аниме в список пользователя
+      tags:
+      - users
+  /users/{user_id}/anime/{anime_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет аниме из списка пользователя
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: MAL ID аниме
+        in: path
+        name: anime_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное удаление
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Неверные входные данные
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Запись не найдена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Удалить аниме из списка пользователя
+      tags:
+      - users
+  /users/{user_id}/anime/{anime_id}/episodes:
+    put:
+      consumes:
+      - application/json
+      description: Обновляет количество просмотренных эпизодов аниме в списке пользователя
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: MAL ID аниме
+        in: path
+        name: anime_id
+        required: true
+        type: integer
+      - description: Новое количество просмотренных эпизодов
+        in: body
+        name: episodes
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UpdateEpisodesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное обновление
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Неверные входные данные
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Запись не найдена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновить количество просмотренных эпизодов
+      tags:
+      - users
+  /users/{user_id}/anime/{anime_id}/rating:
+    put:
+      consumes:
+      - application/json
+      description: Обновляет пользовательский рейтинг аниме в списке пользователя
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: MAL ID аниме
+        in: path
+        name: anime_id
+        required: true
+        type: integer
+      - description: Новый рейтинг аниме (от 0 до 10)
+        in: body
+        name: rating
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UpdateRatingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное обновление
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Неверные входные данные
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Запись не найдена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновить рейтинг аниме
+      tags:
+      - users
+  /users/{user_id}/anime/{anime_id}/status:
+    put:
+      consumes:
+      - application/json
+      description: Обновляет статус аниме в списке пользователя
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: MAL ID аниме
+        in: path
+        name: anime_id
+        required: true
+        type: integer
+      - description: Новый статус аниме
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.UpdateStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное обновление
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Неверные входные данные
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Запись не найдена
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновить статус аниме в списке пользователя
+      tags:
+      - users
+  /users/{user_id}/anime/stats:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает статистику пользователя по просмотру аниме
+      parameters:
+      - description: ID пользователя
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Статистика пользователя
+          schema:
+            $ref: '#/definitions/dtos.StatsResponse'
+        "400":
+          description: Неверный ID пользователя
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить статистику пользователя по аниме
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    description: 'Введите токен в формате: Bearer {token}'
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

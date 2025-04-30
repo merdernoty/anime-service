@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "API для сервиса аниме",
+        "description": "API для сервиса аниме и управления пользовательскими списками",
         "title": "Anime Service API",
         "contact": {},
         "version": "1.0"
@@ -9,6 +9,315 @@
     "host": "localhost:8080",
     "basePath": "/api/",
     "paths": {
+        "/anime/search": {
+            "get": {
+                "description": "Выполняет поиск аниме по заданному запросу с пагинацией",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "anime"
+                ],
+                "summary": "Поиск аниме по запросу",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Поисковый запрос",
+                        "name": "query",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Номер страницы",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 50,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Количество результатов на странице",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.AnimeListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/anime/seasonal/{year}/{season}": {
+            "get": {
+                "description": "Возвращает список аниме для указанного сезона и года",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "anime"
+                ],
+                "summary": "Получить список сезонных аниме",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Год (например, 2023)",
+                        "name": "year",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Сезон (winter, spring, summer, fall)",
+                        "name": "season",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Номер страницы",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 50,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Количество результатов на странице",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.AnimeListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверные параметры запроса",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/anime/top": {
+            "get": {
+                "description": "Возвращает список популярных аниме с пагинацией",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "anime"
+                ],
+                "summary": "Получить список популярных аниме",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Номер страницы",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 50,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Количество результатов на странице",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.AnimeListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/anime/{id}": {
+            "get": {
+                "description": "Получает детальную информацию об аниме по его MAL ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "anime"
+                ],
+                "summary": "Получить информацию об аниме по его ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MAL ID аниме",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.AnimeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный ID аниме",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Аниме не найдено",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/anime/{id}/recommendations": {
+            "get": {
+                "description": "Возвращает список рекомендаций аниме на основе указанного MAL ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "anime"
+                ],
+                "summary": "Получить рекомендации аниме",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MAL ID аниме для получения рекомендаций",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Номер страницы",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 50,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Количество результатов на странице",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.AnimeListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный ID аниме",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Выполняет вход в систему и возвращает токены",
@@ -112,9 +421,615 @@
                     }
                 }
             }
+        },
+        "/users/{user_id}/anime": {
+            "get": {
+                "description": "Возвращает список аниме пользователя с возможностью фильтрации по статусу",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Получить список аниме пользователя",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID пользователя",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Статус аниме (watched, plan_to_watch, watching, waiting)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Номер страницы",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "maximum": 50,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Количество результатов на странице",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UserAnimeListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный ID пользователя",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Добавляет аниме в список пользователя с указанным статусом",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Добавить аниме в список пользователя",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID пользователя",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Информация о добавляемом аниме",
+                        "name": "anime",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.AddAnimeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешное добавление",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверные входные данные",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Аниме не найдено",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{user_id}/anime/stats": {
+            "get": {
+                "description": "Возвращает статистику пользователя по просмотру аниме",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Получить статистику пользователя по аниме",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID пользователя",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Статистика пользователя",
+                        "schema": {
+                            "$ref": "#/definitions/dtos.StatsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный ID пользователя",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{user_id}/anime/{anime_id}": {
+            "delete": {
+                "description": "Удаляет аниме из списка пользователя",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Удалить аниме из списка пользователя",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID пользователя",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "MAL ID аниме",
+                        "name": "anime_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное удаление",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверные входные данные",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Запись не найдена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{user_id}/anime/{anime_id}/episodes": {
+            "put": {
+                "description": "Обновляет количество просмотренных эпизодов аниме в списке пользователя",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Обновить количество просмотренных эпизодов",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID пользователя",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "MAL ID аниме",
+                        "name": "anime_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Новое количество просмотренных эпизодов",
+                        "name": "episodes",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UpdateEpisodesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное обновление",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверные входные данные",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Запись не найдена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{user_id}/anime/{anime_id}/rating": {
+            "put": {
+                "description": "Обновляет пользовательский рейтинг аниме в списке пользователя",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Обновить рейтинг аниме",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID пользователя",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "MAL ID аниме",
+                        "name": "anime_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Новый рейтинг аниме (от 0 до 10)",
+                        "name": "rating",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UpdateRatingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное обновление",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверные входные данные",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Запись не найдена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{user_id}/anime/{anime_id}/status": {
+            "put": {
+                "description": "Обновляет статус аниме в списке пользователя",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Обновить статус аниме в списке пользователя",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID пользователя",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "MAL ID аниме",
+                        "name": "anime_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Новый статус аниме",
+                        "name": "status",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dtos.UpdateStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное обновление",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверные входные данные",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Запись не найдена",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "dtos.AddAnimeRequest": {
+            "type": "object",
+            "required": [
+                "anime_mal_id",
+                "status"
+            ],
+            "properties": {
+                "anime_mal_id": {
+                    "type": "integer",
+                    "example": 5114
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.WatchStatus"
+                        }
+                    ],
+                    "example": "watching"
+                }
+            }
+        },
+        "dtos.AnimeListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dtos.AnimeResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "total_pages": {
+                    "type": "integer",
+                    "example": 50
+                }
+            }
+        },
+        "dtos.AnimeResponse": {
+            "type": "object",
+            "properties": {
+                "airing": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "episodes": {
+                    "type": "integer",
+                    "example": 64
+                },
+                "genres": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dtos.GenreObject"
+                    }
+                },
+                "image_url": {
+                    "type": "string",
+                    "example": "https://cdn.myanimelist.net/images/anime/1223/96541.jpg"
+                },
+                "mal_id": {
+                    "type": "integer",
+                    "example": 5114
+                },
+                "popularity": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "rank": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "score": {
+                    "type": "number",
+                    "example": 9.16
+                },
+                "source": {
+                    "type": "string",
+                    "example": "Manga"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "Finished Airing"
+                },
+                "synopsis": {
+                    "type": "string",
+                    "example": "After a terrible alchemy experiment gone wrong..."
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Fullmetal Alchemist: Brotherhood"
+                },
+                "title_english": {
+                    "type": "string",
+                    "example": "Fullmetal Alchemist: Brotherhood"
+                },
+                "title_japanese": {
+                    "type": "string",
+                    "example": "鋼の錬金術師 FULLMETAL ALCHEMIST"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "TV"
+                }
+            }
+        },
         "dtos.CreateUserDTO": {
             "type": "object",
             "required": [
@@ -162,6 +1077,19 @@
                 }
             }
         },
+        "dtos.GenreObject": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Action"
+                }
+            }
+        },
         "dtos.LoginDTO": {
             "type": "object",
             "required": [
@@ -179,6 +1107,35 @@
                 "password": {
                     "type": "string",
                     "example": "StrongPass123!"
+                }
+            }
+        },
+        "dtos.StatsResponse": {
+            "type": "object",
+            "properties": {
+                "average_rating": {
+                    "type": "number",
+                    "example": 8.75
+                },
+                "total_episodes": {
+                    "type": "integer",
+                    "example": 347
+                },
+                "total_plan_to_watch": {
+                    "type": "integer",
+                    "example": 30
+                },
+                "total_waiting": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "total_watched": {
+                    "type": "integer",
+                    "example": 15
+                },
+                "total_watching": {
+                    "type": "integer",
+                    "example": 5
                 }
             }
         },
@@ -200,6 +1157,132 @@
                 "token_type": {
                     "type": "string",
                     "example": "Bearer"
+                }
+            }
+        },
+        "dtos.UpdateEpisodesRequest": {
+            "type": "object",
+            "required": [
+                "episodes_watched"
+            ],
+            "properties": {
+                "episodes_watched": {
+                    "type": "integer",
+                    "example": 24
+                }
+            }
+        },
+        "dtos.UpdateRatingRequest": {
+            "type": "object",
+            "required": [
+                "rating"
+            ],
+            "properties": {
+                "rating": {
+                    "type": "number",
+                    "maximum": 10,
+                    "minimum": 0,
+                    "example": 9.5
+                }
+            }
+        },
+        "dtos.UpdateStatusRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.WatchStatus"
+                        }
+                    ],
+                    "example": "watched"
+                }
+            }
+        },
+        "dtos.UserAnimeListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dtos.UserAnimeResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "total_count": {
+                    "type": "integer",
+                    "example": 42
+                }
+            }
+        },
+        "dtos.UserAnimeResponse": {
+            "type": "object",
+            "properties": {
+                "anime_episodes": {
+                    "type": "integer",
+                    "example": 64
+                },
+                "anime_image": {
+                    "type": "string",
+                    "example": "https://cdn.myanimelist.net/images/anime/1223/96541.jpg"
+                },
+                "anime_mal_id": {
+                    "type": "integer",
+                    "example": 5114
+                },
+                "anime_score": {
+                    "type": "number",
+                    "example": 9.16
+                },
+                "anime_status": {
+                    "type": "string",
+                    "example": "Finished Airing"
+                },
+                "anime_title": {
+                    "type": "string",
+                    "example": "Fullmetal Alchemist: Brotherhood"
+                },
+                "anime_type": {
+                    "type": "string",
+                    "example": "TV"
+                },
+                "episodes_watched": {
+                    "type": "integer",
+                    "example": 24
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "My favorite anime!"
+                },
+                "rating": {
+                    "type": "number",
+                    "example": 9.5
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.WatchStatus"
+                        }
+                    ],
+                    "example": "watching"
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 42
                 }
             }
         },
@@ -239,6 +1322,29 @@
                     "example": "2024-04-28T10:30:00Z"
                 }
             }
+        },
+        "models.WatchStatus": {
+            "type": "string",
+            "enum": [
+                "watched",
+                "plan_to_watch",
+                "watching",
+                "waiting"
+            ],
+            "x-enum-varnames": [
+                "StatusWatched",
+                "StatusPlanToWatch",
+                "StatusWatching",
+                "StatusWaiting"
+            ]
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Введите токен в формате: Bearer {token}",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }
