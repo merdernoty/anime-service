@@ -22,8 +22,8 @@ import (
 // @title           Anime Service API
 // @version         1.0
 // @description     API для сервиса аниме и управления пользовательскими списками
-// @host            https://otaku-go-fhwhlg-70b18b-85-193-88-34.traefik.me
-// @BasePath        /api/
+// @host            otaku-go-fhwhlg-70b18b-85-193-88-34.traefik.me
+// @BasePath        /api
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
@@ -40,6 +40,7 @@ func main() {
 		Level:   cfg.Logger.Level,
 		Nocolor: cfg.App.Environment != "development",
 	})
+	
 
 	log.SetStandartLogger(logger)
 

@@ -1358,8 +1358,8 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
-	BasePath:         "/api/",
+	Host:             "otaku-go-fhwhlg-70b18b-85-193-88-34.traefik.me",
+	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "Anime Service API",
 	Description:      "API для сервиса аниме и управления пользовательскими списками",

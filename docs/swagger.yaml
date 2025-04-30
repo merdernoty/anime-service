@@ -1,4 +1,4 @@
-basePath: /api/
+basePath: /api
 definitions:
   dtos.AddAnimeRequest:
     properties:
@@ -297,7 +297,7 @@ definitions:
     - StatusPlanToWatch
     - StatusWatching
     - StatusWaiting
-host: localhost:8080
+host: otaku-go-fhwhlg-70b18b-85-193-88-34.traefik.me
 info:
   contact: {}
   description: API для сервиса аниме и управления пользовательскими списками

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/merdernoty/anime-service/docs"
 	"github.com/merdernoty/anime-service/internal/infrastructure/config"
 	"github.com/merdernoty/anime-service/internal/interfaces/http/controllers"
 	"github.com/merdernoty/anime-service/internal/interfaces/http/middleware"
@@ -36,6 +37,13 @@ func NewServer(
     if config.App.Environment == "development" {
         router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
     }
+
+    docs.SwaggerInfo.Title = "Anime Service API"
+	docs.SwaggerInfo.Description = "API для сервиса аниме и управления пользовательскими списками"
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Host = "otaku-go-fhwhlg-70b18b-85-193-88-34.traefik.me" 
+	docs.SwaggerInfo.BasePath = "/api"
+	docs.SwaggerInfo.Schemes = []string{"https"}
     router.Use(gin.Recovery())
     service := &routes.Service{
         AuthController: authConttroler,

@@ -6,8 +6,8 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "localhost:8080",
-    "basePath": "/api/",
+    "host": "otaku-go-fhwhlg-70b18b-85-193-88-34.traefik.me",
+    "basePath": "/api",
     "paths": {
         "/anime/search": {
             "get": {
