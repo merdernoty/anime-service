@@ -1152,10 +1152,6 @@ const docTemplate = `{
                     "type": "string",
                     "example": "john.doe@example.com"
                 },
-                "nickname": {
-                    "type": "string",
-                    "example": "johndoe123"
-                },
                 "password": {
                     "type": "string",
                     "example": "StrongPass123!"

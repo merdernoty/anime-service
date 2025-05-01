@@ -127,9 +127,6 @@ definitions:
       email:
         example: john.doe@example.com
         type: string
-      nickname:
-        example: johndoe123
-        type: string
       password:
         example: StrongPass123!
         type: string
