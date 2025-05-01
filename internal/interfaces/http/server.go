@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/merdernoty/anime-service/docs"
 	"github.com/merdernoty/anime-service/internal/infrastructure/config"
@@ -37,6 +38,20 @@ func NewServer(
     if config.App.Environment == "development" {
         router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
     }
+    
+    // Настройка CORS
+    router.Use(cors.New(cors.Config{
+        AllowOrigins: []string{
+            "http://localhost:3000",
+            "http://otakufrontend-planner-8mdlhp-e7289e-85-193-88-34.traefik.me",
+            "https://otakufrontend-planner-8mdlhp-e7289e-85-193-88-34.traefik.me",
+        },
+        AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+        AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+        ExposeHeaders:    []string{"Content-Length"},
+        AllowCredentials: true,
+        MaxAge: 12 * time.Hour,
+    }))
 
     docs.SwaggerInfo.Title = "Anime Service API"
 	docs.SwaggerInfo.Description = "API для сервиса аниме и управления пользовательскими списками"
