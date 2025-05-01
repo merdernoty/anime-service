@@ -7,7 +7,7 @@ import (
 )
 
 type TokenMaker interface {
-	CreateToken(userID uint, nickname string, email string) (string, error)
+	CreateToken(userID uint, nickname string, email string, token_type string, expiresIn time.Duration) (string, error)
 	VerifyToken(token string) (*Payload, error)
 }
 
@@ -16,9 +16,12 @@ type Payload struct {
 	UserID string `json:"user_id"`
 	Nickname string `json:"nickname"`
 	Email string `json:"email"`
+	TokenType string `json:"token_type"`
+	IssuedAt int64 `json:"issued_at"`
+	ExpiresAt int64 `json:"expires_at"`
 }
 
-func NewPayload(userID, nickname string, email string, ) *Payload {
+func NewPayload(userID, nickname string, email string, TokenType string, IssuedAt int64,ExpiresAt int64) *Payload {
 	now := time.Now()
 	return &Payload{
 		RegisteredClaims: jwt.RegisteredClaims{

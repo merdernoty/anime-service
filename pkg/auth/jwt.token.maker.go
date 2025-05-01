@@ -20,17 +20,24 @@ func NewJWTTokenMaker(secretKey string, duration time.Duration) *JWTTokenMaker {
 	}
 }
 
-func (maker *JWTTokenMaker) CreateToken(userID uint, nickname, email string) (string, error) {
-	payload := NewPayload(
-		strconv.FormatUint(uint64(userID), 10), 
-		nickname, 
-		email,
-	)
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
-	return token.SignedString([]byte(maker.secretKey))
+func (maker *JWTTokenMaker) CreateToken(
+    userID uint,
+    nickname string, 
+	email string,
+    token_type string,
+    expiresIn time.Duration,
+) (string, error) {
+    payload := &Payload{
+        UserID:    strconv.FormatUint(uint64(userID), 10),
+        Nickname:  nickname,
+        Email:     email,
+        TokenType: token_type,
+        IssuedAt:  time.Now().Unix(),
+        ExpiresAt: time.Now().Add(expiresIn).Unix(), 
+    }
+    token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
+    return token.SignedString([]byte(maker.secretKey))
 }
-
 func (maker *JWTTokenMaker) VerifyToken(tokenString string) (*Payload, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)

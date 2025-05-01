@@ -19,18 +19,7 @@ func SetupRoutes(
     api := router.Group("/api")
 
     RegisterAnimeRoutes(api, service.AnimeController, authMiddleware)
-
-    public := api.Group("")
-    {
-        public.POST("/auth/register", service.AuthController.Register)
-        public.POST("/auth/login", service.AuthController.Login)
-    }
-
-    // protected := api.Group("")
-    // protected.Use(middleware.AuthMiddleware(service.AuthService))
-    {
-    // protected.GET("/profile", profileController.GetProfile)
-    }
+    RegisterAuthRoutes(api,service.AuthController)
 }
 
 func NewService(

@@ -136,6 +136,14 @@ definitions:
     required:
     - password
     type: object
+  dtos.RefreshTokenDTO:
+    properties:
+      refresh_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    required:
+    - refresh_token
+    type: object
   dtos.StatsResponse:
     properties:
       average_rating:
@@ -548,7 +556,37 @@ paths:
             $ref: '#/definitions/dtos.ErrorResponse'
       summary: Аутентификация пользователя
       tags:
-      - auth
+      - Auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Обновляет access-токен по refresh-токену
+      parameters:
+      - description: Refresh token
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/dtos.RefreshTokenDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Возвращает новый access-токен
+          schema:
+            $ref: '#/definitions/dtos.TokenResponseDTO'
+        "400":
+          description: Невалидный запрос
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "401":
+          description: Refresh-токен недействителен
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      summary: Обновление JWT-токена
+      tags:
+      - Auth
   /auth/register:
     post:
       consumes:
@@ -582,7 +620,7 @@ paths:
             $ref: '#/definitions/dtos.ErrorResponse'
       summary: Регистрация нового пользователя
       tags:
-      - auth
+      - Auth
   /users/{user_id}/anime:
     get:
       consumes:

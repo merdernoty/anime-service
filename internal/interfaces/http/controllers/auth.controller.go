@@ -43,7 +43,7 @@ func handleError(ctx *gin.Context, err error) {
 // Register godoc
 // @Summary Регистрация нового пользователя
 // @Description Создает нового пользователя в системе
-// @Tags auth
+// @Tags Auth
 // @Accept json
 // @Produce json
 // @Param request body dtos.CreateUserDTO true "Данные для регистрации"
@@ -73,7 +73,7 @@ func (c *AuthController) Register(ctx *gin.Context) {
 // Login godoc
 // @Summary Аутентификация пользователя
 // @Description Выполняет вход в систему и возвращает токены
-// @Tags auth
+// @Tags Auth
 // @Accept json
 // @Produce json
 // @Param request body dtos.LoginDTO true "Учетные данные для входа"
@@ -90,6 +90,32 @@ func (c *AuthController) Login(ctx *gin.Context) {
 	}
 
 	tokenResponse, err := c.authService.Login(ctx, dto)
+	if err != nil {
+		handleError(ctx, err)
+		return
+	}
+	ctx.JSON(http.StatusOK, tokenResponse)
+}
+
+
+// RefreshToken обновляет access-токен
+// @Summary Обновление JWT-токена
+// @Description Обновляет access-токен по refresh-токену
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param input body dtos.RefreshTokenDTO true "Refresh token"
+// @Success 200 {object} dtos.TokenResponseDTO "Возвращает новый access-токен"
+// @Failure 400 {object} dtos.ErrorResponse "Невалидный запрос"
+// @Failure 401 {object} dtos.ErrorResponse "Refresh-токен недействителен"
+// @Router /auth/refresh [post]
+func (c *AuthController) RefreshToken(ctx *gin.Context) {
+	var dto dtos.RefreshTokenDTO
+	if err := ctx.ShouldBindJSON(&dto); err !=nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "validation error", "details": err.Error()})
+		return
+	}
+	tokenResponse, err := c.authService.RefreshToken(ctx, dto)
 	if err != nil {
 		handleError(ctx, err)
 		return

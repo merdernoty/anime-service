@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"strconv"
+
 	"emperror.dev/errors"
 	"github.com/merdernoty/anime-service/internal/domain/dtos"
 	"github.com/merdernoty/anime-service/internal/domain/models"
@@ -66,43 +68,105 @@ func (s *AuthServiceImpl) Register(ctx context.Context, dto dtos.CreateUserDTO) 
 
 	createdUser.Password = ""
 
-	token, err := s.tokenMaker.CreateToken(user.ID, user.Nickname, user.Email)
+	accessToken, err := s.tokenMaker.CreateToken(
+        user.ID,
+        user.Nickname,
+        user.Email,
+        "access",
+        3600, 
+    )
 	if err != nil {
 		return dtos.TokenResponseDTO{}, errors.Wrap(err, "failed to create token")
 	}
 
+	refreshToken, err := s.tokenMaker.CreateToken(
+        user.ID,
+        user.Nickname,
+        user.Email,
+        "refresh",
+        30*24*3600,
+    )
+    if err != nil {
+        return dtos.TokenResponseDTO{}, errors.Wrap(err, "failed to create refresh token")
+    }
+
 	return dtos.TokenResponseDTO{
-		AccessToken: token,
+		AccessToken: accessToken,
+		RefreshToken: refreshToken,
 		TokenType:   "Bearer",
 		ExpiresIn:    3600,
 	}, nil
 }
 func (s *AuthServiceImpl) Login(ctx context.Context, dto dtos.LoginDTO) (dtos.TokenResponseDTO, error) {
-	user, err := s.repo.GetByEmail(ctx, dto.Email)
+    user, err := s.repo.GetByEmail(ctx, dto.Email)
+    if err != nil {
+        return dtos.TokenResponseDTO{}, ErrUserNotFound
+    }
 
+    if !user.CheckPassword(dto.Password) {
+        return dtos.TokenResponseDTO{}, errors.New("invalid password")
+    }
+
+    accessToken, err := s.tokenMaker.CreateToken(
+        user.ID,
+        user.Nickname,
+        user.Email,
+        "access",
+        3600,
+    )
+    if err != nil {
+        return dtos.TokenResponseDTO{}, errors.Wrap(err, "failed to create access token")
+    }
+
+    refreshToken, err := s.tokenMaker.CreateToken(
+        user.ID,
+        user.Nickname,
+        user.Email,
+        "refresh",
+        30*24*3600,
+    )
+    if err != nil {
+        return dtos.TokenResponseDTO{}, errors.Wrap(err, "failed to create refresh token")
+    }
+
+    s.logger.Info("user logged in successfully", map[string]interface{}{
+        "NickName": user.Nickname,
+        "Email":    user.Email,
+    })
+
+    return dtos.TokenResponseDTO{
+        AccessToken:  accessToken,
+        RefreshToken: refreshToken,
+        TokenType:    "Bearer",
+        ExpiresIn:    3600,
+    }, nil
+}
+
+func (s *AuthServiceImpl) RefreshToken(ctx context.Context, dto dtos.RefreshTokenDTO) (string, error) {
+	claims, err := s.tokenMaker.VerifyToken(dto.RefreshToken)
 	if err != nil {
-		return dtos.TokenResponseDTO{}, ErrUserNotFound
+		return "", errors.Wrap(err, "failed to verify token")
 	}
-
-	if !user.CheckPassword(dto.Password) {
-		return dtos.TokenResponseDTO{}, errors.New("invalid password")
-	}
-
-	token, err := s.tokenMaker.CreateToken(user.ID, user.Nickname, user.Email)
-
+	userID, err := strconv.ParseUint(claims.UserID, 10, 32)
 	if err != nil {
-		return dtos.TokenResponseDTO{}, errors.Wrap(err, "failed to create token")
+		return "", errors.Wrap(err, "failed to parse user ID")
 	}
 
-	s.logger.Info("user logged in successfully", map[string]interface{}{
+	user, err := s.repo.GetByID(ctx, uint(userID))
+	if err != nil {
+		return "", ErrUserNotFound
+	}
+
+	token, err := s.tokenMaker.CreateToken(user.ID, user.Nickname, user.Email, "access", 3600)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to create token")
+	}
+
+	s.logger.Info("user refreshed token successfully", map[string]interface{}{
 		"NickName": user.Nickname,
 		"Email":    user.Email,
 	})
-	user.Password = ""
-	return dtos.TokenResponseDTO{
-		AccessToken: token,
-		TokenType:   "Bearer",
-		ExpiresIn:    3600, 
-	}, nil
 
+	return token, nil
 }
+ 
