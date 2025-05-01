@@ -17,6 +17,7 @@ var (
 	ErrUserNotFound       = errors.New("user not found")
 	ErrUserNicknameExists = errors.New("user with this nickname already exists")
 	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrTokenCreationFailed = errors.New("failed to create token")
 )
 
 type AuthServiceImpl struct {
@@ -104,7 +105,7 @@ func (s *AuthServiceImpl) Login(ctx context.Context, dto dtos.LoginDTO) (dtos.To
     }
 
     if !user.CheckPassword(dto.Password) {
-        return dtos.TokenResponseDTO{}, errors.New("invalid password")
+        return dtos.TokenResponseDTO{}, ErrInvalidCredentials
     }
 
     accessToken, err := s.tokenMaker.CreateToken(
@@ -115,7 +116,7 @@ func (s *AuthServiceImpl) Login(ctx context.Context, dto dtos.LoginDTO) (dtos.To
         3600,
     )
     if err != nil {
-        return dtos.TokenResponseDTO{}, errors.Wrap(err, "failed to create access token")
+        return dtos.TokenResponseDTO{}, ErrTokenCreationFailed
     }
 
     refreshToken, err := s.tokenMaker.CreateToken(
@@ -126,7 +127,7 @@ func (s *AuthServiceImpl) Login(ctx context.Context, dto dtos.LoginDTO) (dtos.To
         30*24*3600,
     )
     if err != nil {
-        return dtos.TokenResponseDTO{}, errors.Wrap(err, "failed to create refresh token")
+        return dtos.TokenResponseDTO{}, ErrTokenCreationFailed
     }
 
     s.logger.Info("user logged in successfully", map[string]interface{}{
@@ -145,7 +146,7 @@ func (s *AuthServiceImpl) Login(ctx context.Context, dto dtos.LoginDTO) (dtos.To
 func (s *AuthServiceImpl) RefreshToken(ctx context.Context, dto dtos.RefreshTokenDTO) (string, error) {
 	claims, err := s.tokenMaker.VerifyToken(dto.RefreshToken)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to verify token")
+		return "", ErrInvalidCredentials
 	}
 	userID, err := strconv.ParseUint(claims.UserID, 10, 32)
 	if err != nil {
@@ -159,7 +160,7 @@ func (s *AuthServiceImpl) RefreshToken(ctx context.Context, dto dtos.RefreshToke
 
 	token, err := s.tokenMaker.CreateToken(user.ID, user.Nickname, user.Email, "access", 3600)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to create token")
+		return "", ErrTokenCreationFailed
 	}
 
 	s.logger.Info("user refreshed token successfully", map[string]interface{}{

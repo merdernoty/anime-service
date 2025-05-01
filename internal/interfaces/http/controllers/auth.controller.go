@@ -19,7 +19,7 @@ func NewAuthController(authService *services.AuthServiceImpl) *AuthController {
 	}
 }
 
-func handleError(ctx *gin.Context, err error) {
+func handleAuthError(ctx *gin.Context, err error) {
 	switch {
 	case err == services.ErrUserAlreadyExists:
 		ctx.JSON(http.StatusConflict, gin.H{
@@ -62,7 +62,7 @@ func (c *AuthController) Register(ctx *gin.Context) {
 	tokenResponse, err := c.authService.Register(ctx, dto)
 	if err != nil {
 		fmt.Print(err)
-		handleError(ctx, err)
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -91,7 +91,7 @@ func (c *AuthController) Login(ctx *gin.Context) {
 
 	tokenResponse, err := c.authService.Login(ctx, dto)
 	if err != nil {
-		handleError(ctx, err)
+		handleAuthError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, tokenResponse)
@@ -117,7 +117,7 @@ func (c *AuthController) RefreshToken(ctx *gin.Context) {
 	}
 	tokenResponse, err := c.authService.RefreshToken(ctx, dto)
 	if err != nil {
-		handleError(ctx, err)
+		handleAuthError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, tokenResponse)

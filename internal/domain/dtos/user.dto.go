@@ -32,7 +32,6 @@ type UserResponseDTO struct {
 }
 
 type LoginDTO struct {
-	NickName string `json:"nickname" validate:"required_without=Email" example:"johndoe123" swaggertype:"string"`
 	Email    string `json:"email" validate:"required_without=NickName,omitempty,email" example:"john.doe@example.com" swaggertype:"string"`
 	Password string `json:"password" validate:"required" example:"StrongPass123!" swaggertype:"string"`
 }

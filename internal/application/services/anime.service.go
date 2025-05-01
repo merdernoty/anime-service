@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"emperror.dev/errors"
@@ -17,6 +16,16 @@ type AnimeServiceImpl struct {
 	userAnimeRepo *repositories.UserAnimeRepository
 	logger        logur.LoggerFacade
 }
+
+var (
+	ErrAnimeNotFound = errors.New("anime not found")
+	ErrAnimeAlreadyExists = errors.New("anime already exists in user list")
+	ErrAnimeNotInUserList = errors.New("anime not found in user list")
+	ErrAnimeUpdateFailed = errors.New("failed to update anime in user list")
+	ErrAnimeDeleteFailed = errors.New("failed to delete anime from user list")
+	ErrAnimeStatsFailed = errors.New("failed to get user anime stats")
+	ErrFetchAnimeFailed = errors.New("failed to fetch anime details")
+)
 
 func NewAnimeService( jikanClient *api.JikanClient, userAnimeRepo *repositories.UserAnimeRepository, logger logur.LoggerFacade) *AnimeServiceImpl {
 	return &AnimeServiceImpl{
@@ -36,7 +45,7 @@ func (s *AnimeServiceImpl) GetAnimeByID(ctx context.Context, malID int64) (*mode
 			"mal_id": malID,
 			"error":  err.Error(),
 		})
-		return nil, errors.Wrap(err, "error getting anime by ID")
+		return nil, ErrAnimeNotFound
 	}
 
 	return anime, nil
@@ -55,7 +64,7 @@ func (s *AnimeServiceImpl) SearchAnime(ctx context.Context, query string, page, 
 			"query": query,
 			"error": err.Error(),
 		})
-		return nil, 0, errors.Wrap(err, "error searching anime")
+		return nil, 0, ErrFetchAnimeFailed
 	}
 
 	return animes, totalPages, nil
@@ -72,7 +81,7 @@ func (s *AnimeServiceImpl) GetTopAnime(ctx context.Context, page, limit int) ([]
 		s.logger.Error("Error getting top anime", map[string]interface{}{
 			"error": err.Error(),
 		})
-		return nil, 0, errors.Wrap(err, "error getting top anime")
+		return nil, 0, ErrFetchAnimeFailed
 	}
 
 	return animes, totalPages, nil
@@ -93,7 +102,7 @@ func (s *AnimeServiceImpl) GetSeasonalAnime(ctx context.Context, year, season st
 			"season": season,
 			"error":  err.Error(),
 		})
-		return nil, 0, errors.Wrap(err, "error getting seasonal anime")
+		return nil, 0, ErrFetchAnimeFailed
 	}
 
 	return animes, totalPages, nil
@@ -112,7 +121,7 @@ func (s *AnimeServiceImpl) GetAnimeRecommendations(ctx context.Context, malID in
 			"mal_id": malID,
 			"error":  err.Error(),
 		})
-		return nil, errors.Wrap(err, "error getting anime recommendations")
+		return nil, ErrFetchAnimeFailed
 	}
 
 	return animes, nil
@@ -132,7 +141,7 @@ func (s *AnimeServiceImpl) GetUserAnimeList(ctx context.Context, filter models.U
 			"user_id": filter.UserID,
 			"error":   err.Error(),
 		})
-		return nil, errors.Wrap(err, "error getting user anime list")
+		return nil, ErrFetchAnimeFailed
 	}
 
 	return userAnimeList, nil
@@ -151,7 +160,7 @@ func (s *AnimeServiceImpl) AddAnimeToUserList(ctx context.Context, userID uint, 
 			"anime_mal_id": animeMALID,
 			"error":        err.Error(),
 		})
-		return fmt.Errorf("anime with MAL ID %d not found: %w", animeMALID, err)
+		return ErrAnimeNotFound
 	}
 
 	userAnime := &models.UserAnime{
@@ -169,7 +178,7 @@ func (s *AnimeServiceImpl) AddAnimeToUserList(ctx context.Context, userID uint, 
 			"anime_mal_id": animeMALID,
 			"error":        err.Error(),
 		})
-		return errors.Wrap(err, "error adding anime to user list")
+		return ErrAnimeUpdateFailed
 	}
 
 	return nil
@@ -188,7 +197,7 @@ func (s *AnimeServiceImpl) RemoveAnimeFromUserList(ctx context.Context, userID u
 			"anime_mal_id": animeMALID,
 			"error":        err.Error(),
 		})
-		return errors.Wrap(err, "error removing anime from user list")
+		return ErrAnimeDeleteFailed
 	}
 
 	return nil
@@ -208,7 +217,7 @@ func (s *AnimeServiceImpl) UpdateUserAnimeStatus(ctx context.Context, userID uin
 			"anime_mal_id": animeMALID,
 			"error":        err.Error(),
 		})
-		return errors.Wrap(err, "error updating user anime status")
+		return ErrAnimeUpdateFailed
 	}
 
 	return nil
@@ -228,7 +237,7 @@ func (s *AnimeServiceImpl) UpdateUserAnimeEpisodes(ctx context.Context, userID u
 			"anime_mal_id": animeMALID,
 			"error":        err.Error(),
 		})
-		return errors.Wrap(err, "error updating user anime episodes watched")
+		return ErrAnimeUpdateFailed
 	}
 
 	return nil
@@ -248,7 +257,7 @@ func (s *AnimeServiceImpl) UpdateUserAnimeRating(ctx context.Context, userID uin
 			"anime_mal_id": animeMALID,
 			"error":        err.Error(),
 		})
-		return errors.Wrap(err, "error updating user anime rating")
+		return ErrAnimeUpdateFailed
 	}
 
 	return nil
@@ -265,7 +274,7 @@ func (s *AnimeServiceImpl) GetUserAnimeStats(ctx context.Context, userID uint) (
 			"user_id": userID,
 			"error":   err.Error(),
 		})
-		return nil, errors.Wrap(err, "error getting user anime stats")
+		return nil, ErrAnimeStatsFailed
 	}
 
 	return stats, nil

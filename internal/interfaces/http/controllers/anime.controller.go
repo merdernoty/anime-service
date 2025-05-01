@@ -23,6 +23,53 @@ func NewAnimeController(animeService services.AnimeServiceImpl, logger logur.Log
 	}
 }
 
+func handleAnimeError(ctx *gin.Context, err error) {
+	switch {
+	case err == services.ErrAnimeAlreadyExists:
+		ctx.JSON(http.StatusConflict, gin.H{
+			"error":   "anime already exists",
+			"details": err.Error(),
+		})
+	case err == services.ErrAnimeDeleteFailed:
+		ctx.JSON(http.StatusConflict, gin.H{
+			"error":   "anime delete failed",
+			"details": err.Error(),
+		})
+	case err == services.ErrAnimeNotInUserList:
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"error":   "anime not found in user list",
+			"details": err.Error(),
+		})
+	case err == services.ErrAnimeUpdateFailed:
+		ctx.JSON(http.StatusConflict, gin.H{
+			"error":   "anime update failed",
+			"details": err.Error(),
+		})
+	case err == services.ErrAnimeStatsFailed:
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"error":   "anime stats not found",
+			"details": err.Error(),
+		})
+	case err == services.ErrAnimeNotFound:
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"error":   "anime not found",
+			"details": err.Error(),
+		})
+	case err == services.ErrFetchAnimeFailed:
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"error":   "fetch anime failed",
+			"details": err.Error(),
+		})
+	default:
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "internal server error",
+			"details": err.Error(),
+		})
+	}
+}
+
+
+
 
 // GetAnimeByID godoc
 // @Summary Получить информацию об аниме по его ID
@@ -55,7 +102,7 @@ func (c *AnimeController) GetAnimeByID(ctx *gin.Context) {
 	}
 
 	if anime == nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "Аниме не найдено"})
+		handleAnimeError(ctx, services.ErrAnimeNotFound)
 		return
 	}
 
@@ -122,7 +169,7 @@ func (c *AnimeController) SearchAnime(ctx *gin.Context) {
 			"query": query,
 			"error": err.Error(),
 		})
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось выполнить поиск аниме"})
+		handleAnimeError(ctx, err)
 		return
 	}
 
@@ -194,7 +241,7 @@ func (c *AnimeController) GetTopAnime(ctx *gin.Context) {
 		c.logger.Error("Error getting top anime", map[string]interface{}{
 			"error": err.Error(),
 		})
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось получить список популярных аниме"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -285,7 +332,7 @@ func (c *AnimeController) GetSeasonalAnime(ctx *gin.Context) {
 			"season": season,
 			"error":  err.Error(),
 		})
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось получить список сезонных аниме"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -366,7 +413,7 @@ func (c *AnimeController) GetAnimeRecommendations(ctx *gin.Context) {
 			"mal_id": malID,
 			"error":  err.Error(),
 		})
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось получить рекомендации аниме"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -439,7 +486,7 @@ func (c *AnimeController) GetUserAnimeList(ctx *gin.Context) {
 			"user_id": userID,
 			"error":   err.Error(),
 		})
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось получить список аниме пользователя"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -488,13 +535,13 @@ func (c *AnimeController) AddAnimeToUserList(ctx *gin.Context) {
 	userIDStr := ctx.Param("user_id")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID пользователя"})
+		handleAuthError(ctx, err)
 		return
 	}
 
 	var request dtos.AddAnimeRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверные входные данные"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -505,7 +552,7 @@ func (c *AnimeController) AddAnimeToUserList(ctx *gin.Context) {
 			"anime_mal_id": request.AnimeMALID,
 			"error":        err.Error(),
 		})
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось добавить аниме в список пользователя"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -529,14 +576,14 @@ func (c *AnimeController) RemoveAnimeFromUserList(ctx *gin.Context) {
 	userIDStr := ctx.Param("user_id")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID пользователя"})
+		handleAuthError(ctx, err)
 		return
 	}
 
 	animeIDStr := ctx.Param("anime_id")
 	animeMALID, err := strconv.ParseInt(animeIDStr, 10, 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID аниме"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -549,11 +596,11 @@ func (c *AnimeController) RemoveAnimeFromUserList(ctx *gin.Context) {
 		})
 		
 		if err.Error() == "user anime not found" {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "Аниме не найдено в списке пользователя"})
+			handleAuthError(ctx, err)
 			return
 		}
 		
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось удалить аниме из списка пользователя"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -578,20 +625,20 @@ func (c *AnimeController) UpdateUserAnimeStatus(ctx *gin.Context) {
 	userIDStr := ctx.Param("user_id")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID пользователя"})
+		handleAuthError(ctx, err)
 		return
 	}
 
 	animeIDStr := ctx.Param("anime_id")
 	animeMALID, err := strconv.ParseInt(animeIDStr, 10, 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID аниме"})
+		handleAuthError(ctx, err)
 		return
 	}
 
 	var request dtos.UpdateStatusRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверные входные данные"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -604,11 +651,11 @@ func (c *AnimeController) UpdateUserAnimeStatus(ctx *gin.Context) {
 		})
 		
 		if err.Error() == "user anime not found" {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "Аниме не найдено в списке пользователя"})
+			handleAuthError(ctx, err)
 			return
 		}
 		
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось обновить статус аниме"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -633,20 +680,20 @@ func (c *AnimeController) UpdateUserAnimeEpisodes(ctx *gin.Context) {
 	userIDStr := ctx.Param("user_id")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID пользователя"})
+		handleAuthError(ctx, err)
 		return
 	}
 
 	animeIDStr := ctx.Param("anime_id")
 	animeMALID, err := strconv.ParseInt(animeIDStr, 10, 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID аниме"})
+		handleAuthError(ctx, err)
 		return
 	}
 
 	var request dtos.UpdateEpisodesRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверные входные данные"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -660,11 +707,11 @@ func (c *AnimeController) UpdateUserAnimeEpisodes(ctx *gin.Context) {
 		})
 		
 		if err.Error() == "user anime not found" {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "Аниме не найдено в списке пользователя"})
+			handleAuthError(ctx, err)
 			return
 		}
 		
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось обновить количество просмотренных эпизодов"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -689,20 +736,20 @@ func (c *AnimeController) UpdateUserAnimeRating(ctx *gin.Context) {
 	userIDStr := ctx.Param("user_id")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID пользователя"})
+		handleAuthError(ctx, err)
 		return
 	}
 
 	animeIDStr := ctx.Param("anime_id")
 	animeMALID, err := strconv.ParseInt(animeIDStr, 10, 64)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID аниме"})
+		handleAuthError(ctx, err)
 		return
 	}
 
 	var request dtos.UpdateRatingRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверные входные данные"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -722,11 +769,11 @@ func (c *AnimeController) UpdateUserAnimeRating(ctx *gin.Context) {
 		})
 		
 		if err.Error() == "user anime not found" {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": "Аниме не найдено в списке пользователя"})
+			handleAuthError(ctx, err)
 			return
 		}
 		
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось обновить рейтинг аниме"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -748,7 +795,7 @@ func (c *AnimeController) GetUserAnimeStats(ctx *gin.Context) {
 	userIDStr := ctx.Param("user_id")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Неверный ID пользователя"})
+		handleAuthError(ctx, err)
 		return
 	}
 
@@ -758,7 +805,7 @@ func (c *AnimeController) GetUserAnimeStats(ctx *gin.Context) {
 			"user_id": userID,
 			"error":   err.Error(),
 		})
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Не удалось получить статистику пользователя"})
+		handleAuthError(ctx, err)
 		return
 	}
 
