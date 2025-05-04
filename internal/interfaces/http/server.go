@@ -32,6 +32,7 @@ func NewServer(
     config *config.Config,
     authConttroler *controllers.AuthController,
     animeController *controllers.AnimeController,
+    userController *controllers.UserController,
     authMiddleware middleware.AuthMiddleware,
 ) *Server {
     router := gin.New()
@@ -55,6 +56,7 @@ func NewServer(
     service := &routes.Service{
         AuthController: authConttroler,
         AnimeController: animeController,
+        UserController: userController,
     }
     routes.SetupRoutes(router, service, &authMiddleware)
     
@@ -104,7 +106,6 @@ func setupSwagger(router *gin.Engine, config *config.Config) {
     docs.SwaggerInfo.Description = "API для сервиса аниме и управления пользовательскими списками"
     docs.SwaggerInfo.Version = "1.0"
     docs.SwaggerInfo.BasePath = "/api"
-    
     if config.App.Environment == "development" {
         docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", config.HTTP.Port)
         docs.SwaggerInfo.Schemes = []string{"http"}

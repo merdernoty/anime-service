@@ -73,3 +73,11 @@ func (r *UserRepositoryImpl) GetByNickName(ctx context.Context, nickName string)
 	}
 	return user, nil
 }
+// func (r *UserRepositoryImpl) GetUserFriends(ctx context.Context, userID uint) ([]models.User, error) {
+// 	var friends []models.User
+// 	result := r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", userID).Association("Friends").Find(&friends)
+// 	if result.Error != nil {
+// 		return nil, result.Error
+// 	}
+// 	return friends, nil
+// }

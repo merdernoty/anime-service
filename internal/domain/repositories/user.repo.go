@@ -14,4 +14,5 @@ type UserRepository interface {
 	Delete(ctx context.Context, id uint) error
 	GetAll(ctx context.Context) ([]models.User, error)
 	GetByNickName(ctx context.Context, nickName string) (models.User, error)
+	// GetUserFriends(ctx context.Context, userID uint) ([]models.User, error)
 }

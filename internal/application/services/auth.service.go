@@ -20,6 +20,7 @@ var (
 	ErrInvalidCredentials  = errors.New("invalid credentials")
 	ErrTokenCreationFailed = errors.New("failed to create token")
 	ErrNoCookieFound       = errors.New("refresh token not found in cookies")
+	ErrUnauthorized		= errors.New("unauthorized")
 )
 
 const (

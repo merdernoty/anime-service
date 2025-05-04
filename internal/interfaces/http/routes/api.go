@@ -9,6 +9,7 @@ import (
 type Service struct {
     AuthController *controllers.AuthController
     AnimeController *controllers.AnimeController
+    UserController *controllers.UserController
 }
 
 func SetupRoutes(
@@ -17,7 +18,7 @@ func SetupRoutes(
     authMiddleware *middleware.AuthMiddleware,
 ) {
     api := router.Group("/api")
-
+    RegisterUserRoutes(api, service.UserController, authMiddleware)
     RegisterAnimeRoutes(api, service.AnimeController, authMiddleware)
     RegisterAuthRoutes(api,service.AuthController)
 }
@@ -25,8 +26,11 @@ func SetupRoutes(
 func NewService(
     authController *controllers.AuthController,
     animeController *controllers.AnimeController,
+    userController *controllers.UserController,
 ) *Service {
     return &Service{
         AuthController: authController,
+        AnimeController: animeController,
+        UserController: userController,
     }
 }

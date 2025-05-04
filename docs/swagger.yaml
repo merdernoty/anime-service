@@ -192,6 +192,31 @@ definitions:
     required:
     - status
     type: object
+  dtos.UpdateUserDTO:
+    properties:
+      avatar_url:
+        example: https://example.com/avatar.jpg
+        type: string
+      email:
+        example: john.doe@example.com
+        type: string
+      firstname:
+        example: John
+        type: string
+      lastname:
+        example: Doe
+        type: string
+      nickname:
+        example: johndoe123
+        minLength: 6
+        type: string
+    required:
+    - avatar_url
+    - email
+    - firstname
+    - lastname
+    - nickname
+    type: object
   dtos.UserAnimeListResponse:
     properties:
       items:
@@ -291,8 +316,15 @@ definitions:
     - StatusWatching
     - StatusWaiting
 info:
-  contact: {}
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
   description: API для сервиса аниме и управления пользовательскими списками
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
   title: Anime Service API
   version: "1.0"
 paths:
@@ -609,6 +641,73 @@ paths:
       summary: Регистрация нового пользователя
       tags:
       - Auth
+  /user/profile:
+    get:
+      consumes:
+      - application/json
+      description: Получить профиль пользователя по ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное получение профиля
+          schema:
+            $ref: '#/definitions/dtos.UserResponseDTO'
+        "400":
+          description: Ошибка валидации
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Получить профиль пользователя
+      tags:
+      - Profile
+    put:
+      consumes:
+      - application/json
+      description: Обновить профиль пользователя по ID
+      parameters:
+      - description: Данные для обновления профиля
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/dtos.UpdateUserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное обновление профиля
+          schema:
+            $ref: '#/definitions/dtos.UserResponseDTO'
+        "400":
+          description: Ошибка валидации
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/dtos.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Обновить профиль пользователя
+      tags:
+      - Profile
   /users/{user_id}/anime:
     get:
       consumes:

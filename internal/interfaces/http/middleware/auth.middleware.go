@@ -68,18 +68,14 @@ func (m *AuthMiddleware) Auth() gin.HandlerFunc {
 			return
 		}
 
-		user, err := m.userRepository.GetByID(ctx, uint(userID))
-		if err != nil {
-			ctx.JSON(http.StatusUnauthorized, dtos.ErrorResponse{
-				Code:    http.StatusUnauthorized,
-				Message: "User not found",
-			})
-			ctx.Abort()
-			return
+		basicUserInfo := map[string]interface{}{
+			"ID":        userID,
+			"Email":     payload.Email,
+			"NickName":  payload.Nickname,
 		}
 
-
-		ctx.Set("user", user)
+		ctx.Set("user", basicUserInfo)
+		ctx.Set("userID", uint(userID))
 		ctx.Set("payload", payload)
 		ctx.Next()
 	}

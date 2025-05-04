@@ -19,13 +19,24 @@ import (
 	"github.com/merdernoty/anime-service/pkg/auth"
 )
 
-//	@title						Anime Service API
-//	@version					1.0
-//	@description				API для сервиса аниме и управления пользовательскими списками
-//	@securityDefinitions.apikey	BearerAuth
-//	@in							header
-//	@name						Authorization
-//	@description				Введите токен в формате: Bearer {token}
+// В файле main.go, перед функцией main():
+
+// @title           Anime Service API
+// @version         1.0
+// @description     API для сервиса аниме и управления пользовательскими списками
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Введите токен в формате: Bearer {token}
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
@@ -81,6 +92,11 @@ func main() {
 		cfg.Auth.TokenDuration,
 	)
 
+	userService := services.NewUserService(
+		userRepo,
+		logger,
+	)
+
 	authService := services.NewAuthService(
 		userRepo, 
 		logger,
@@ -96,6 +112,7 @@ func main() {
 	authMiddleware := middleware.NewAuthMiddleware(tokenMaker, userRepo)
 	authController := controllers.NewAuthController(authService)
 	animeController := controllers.NewAnimeController(*animeService, logger)
+	userController := controllers.NewUserController(userService, logger)
 
 	router := gin.Default()
 	
@@ -105,6 +122,7 @@ func main() {
 		routes.NewService(
 			authController,
 			animeController,
+			userController,
 		),
 		authMiddleware,
 	)
@@ -113,6 +131,7 @@ func main() {
 		cfg,
 		authController,
 		animeController,
+		userController,
 		*authMiddleware,
 	)
 
