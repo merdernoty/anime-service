@@ -45,31 +45,31 @@ func (s *UserServiceImlp) UpdateUserProfile(ctx *gin.Context, id uint, dto dtos.
 	}
 
 	if dto.NickName != "" {
-		if *&dto.NickName != user.Nickname {
-			existingUser, err := s.repo.GetByNickName(ctx, *&dto.NickName)
+		if dto.NickName != user.Nickname {
+			existingUser, err := s.repo.GetByNickName(ctx, dto.NickName)
 			if err == nil && existingUser.ID != user.ID {
 				return dtos.UserResponseDTO{}, errors.New("nickname already exists")
 			}
-			user.Nickname = *&dto.NickName
+			user.Nickname = dto.NickName
 		}
 	}
 
 	if dto.Email != "" {
-		if *&dto.Email != user.Email {
-			existingUser, err := s.repo.GetByEmail(ctx, *&dto.Email)
+		if dto.Email != user.Email {
+			existingUser, err := s.repo.GetByEmail(ctx, dto.Email)
 			if err == nil && existingUser.ID != user.ID {
 				return dtos.UserResponseDTO{}, errors.New("пользователь с таким email уже существует")
 			}
-			user.Email = *&dto.Email
+			user.Email = dto.Email
 		}
 	}
 
 	if dto.FirstName != "" {
-		user.Firstname = *&dto.FirstName
+		user.Firstname = dto.FirstName
 	}
 
 	if dto.LastName != "" {
-		user.Lastname = *&dto.LastName
+		user.Lastname = dto.LastName
 	}
 
 
