@@ -1,4 +1,3 @@
-basePath: /api
 definitions:
   dtos.AddAnimeRequest:
     properties:
@@ -133,14 +132,6 @@ definitions:
     required:
     - password
     type: object
-  dtos.RefreshTokenDTO:
-    properties:
-      refresh_token:
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        type: string
-    required:
-    - refresh_token
-    type: object
   dtos.StatsResponse:
     properties:
       average_rating:
@@ -170,9 +161,6 @@ definitions:
       expires_in:
         example: 3600
         type: integer
-      refresh_token:
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        type: string
       token_type:
         example: Bearer
         type: string
@@ -302,7 +290,6 @@ definitions:
     - StatusPlanToWatch
     - StatusWatching
     - StatusWaiting
-host: otaku-go-fhwhlg-70b18b-85-193-88-34.traefik.me
 info:
   contact: {}
   description: API для сервиса аниме и управления пользовательскими списками
@@ -554,18 +541,26 @@ paths:
       summary: Аутентификация пользователя
       tags:
       - Auth
-  /auth/refresh:
+  /auth/logout:
     post:
       consumes:
       - application/json
-      description: Обновляет access-токен по refresh-токену
-      parameters:
-      - description: Refresh token
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/dtos.RefreshTokenDTO'
+      description: Удаляет refresh-токен и очищает куки
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный выход
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Выход из системы
+      tags:
+      - Auth
+  /auth/refresh:
+    post:
+      description: Обновляет access-токен, используя refresh-токен из куки
       produces:
       - application/json
       responses:
@@ -573,12 +568,8 @@ paths:
           description: Возвращает новый access-токен
           schema:
             $ref: '#/definitions/dtos.TokenResponseDTO'
-        "400":
-          description: Невалидный запрос
-          schema:
-            $ref: '#/definitions/dtos.ErrorResponse'
         "401":
-          description: Refresh-токен недействителен
+          description: Refresh-токен недействителен или отсутствует
           schema:
             $ref: '#/definitions/dtos.ErrorResponse'
       summary: Обновление JWT-токена

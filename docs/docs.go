@@ -376,9 +376,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/refresh": {
+        "/auth/logout": {
             "post": {
-                "description": "Обновляет access-токен по refresh-токену",
+                "description": "Удаляет refresh-токен и очищает куки",
                 "consumes": [
                     "application/json"
                 ],
@@ -388,18 +388,30 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Обновление JWT-токена",
-                "parameters": [
-                    {
-                        "description": "Refresh token",
-                        "name": "input",
-                        "in": "body",
-                        "required": true,
+                "summary": "Выход из системы",
+                "responses": {
+                    "200": {
+                        "description": "Успешный выход",
                         "schema": {
-                            "$ref": "#/definitions/dtos.RefreshTokenDTO"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "description": "Обновляет access-токен, используя refresh-токен из куки",
+                "produces": [
+                    "application/json"
                 ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Обновление JWT-токена",
                 "responses": {
                     "200": {
                         "description": "Возвращает новый access-токен",
@@ -407,14 +419,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/dtos.TokenResponseDTO"
                         }
                     },
-                    "400": {
-                        "description": "Невалидный запрос",
-                        "schema": {
-                            "$ref": "#/definitions/dtos.ErrorResponse"
-                        }
-                    },
                     "401": {
-                        "description": "Refresh-токен недействителен",
+                        "description": "Refresh-токен недействителен или отсутствует",
                         "schema": {
                             "$ref": "#/definitions/dtos.ErrorResponse"
                         }
@@ -1158,18 +1164,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dtos.RefreshTokenDTO": {
-            "type": "object",
-            "required": [
-                "refresh_token"
-            ],
-            "properties": {
-                "refresh_token": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                }
-            }
-        },
         "dtos.StatsResponse": {
             "type": "object",
             "properties": {
@@ -1209,10 +1203,6 @@ const docTemplate = `{
                 "expires_in": {
                     "type": "integer",
                     "example": 3600
-                },
-                "refresh_token": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 },
                 "token_type": {
                     "type": "string",
@@ -1412,8 +1402,8 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "otaku-go-fhwhlg-70b18b-85-193-88-34.traefik.me",
-	BasePath:         "/api",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Anime Service API",
 	Description:      "API для сервиса аниме и управления пользовательскими списками",

@@ -19,15 +19,13 @@ import (
 	"github.com/merdernoty/anime-service/pkg/auth"
 )
 
-// @title           Anime Service API
-// @version         1.0
-// @description     API для сервиса аниме и управления пользовательскими списками
-// @host            otaku-go-fhwhlg-70b18b-85-193-88-34.traefik.me
-// @BasePath        /api
-// @securityDefinitions.apikey BearerAuth
-// @in header
-// @name Authorization
-// @description Введите токен в формате: Bearer {token}
+//	@title						Anime Service API
+//	@version					1.0
+//	@description				API для сервиса аниме и управления пользовательскими списками
+//	@securityDefinitions.apikey	BearerAuth
+//	@in							header
+//	@name						Authorization
+//	@description				Введите токен в формате: Bearer {token}
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
@@ -43,7 +41,6 @@ func main() {
 	
 
 	log.SetStandartLogger(logger)
-
 	// Подключение к базе данных
 	db, err := database.NewConnector(cfg.Database)
 	if err != nil {

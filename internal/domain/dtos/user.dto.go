@@ -38,7 +38,6 @@ type LoginDTO struct {
 
 type TokenResponseDTO struct {
 	AccessToken  string `json:"access_token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." swaggertype:"string"`
-	RefreshToken string `json:"refresh_token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." swaggertype:"string"`
 	ExpiresIn    int64  `json:"expires_in" example:"3600" swaggertype:"integer"`
 	TokenType    string `json:"token_type" example:"Bearer" swaggertype:"string"`
 }

@@ -72,17 +72,17 @@ func handleAnimeError(ctx *gin.Context, err error) {
 
 
 // GetAnimeByID godoc
-// @Summary Получить информацию об аниме по его ID
-// @Description Получает детальную информацию об аниме по его MAL ID
-// @Tags anime
-// @Accept json
-// @Produce json
-// @Param id path int true "MAL ID аниме"
-// @Success 200 {object} dtos.AnimeResponse
-// @Failure 400 {object} map[string]string "Неверный ID аниме"
-// @Failure 404 {object} map[string]string "Аниме не найдено"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Router /anime/{id} [get]
+//	@Summary		Получить информацию об аниме по его ID
+//	@Description	Получает детальную информацию об аниме по его MAL ID
+//	@Tags			anime
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"MAL ID аниме"
+//	@Success		200	{object}	dtos.AnimeResponse
+//	@Failure		400	{object}	map[string]string	"Неверный ID аниме"
+//	@Failure		404	{object}	map[string]string	"Аниме не найдено"
+//	@Failure		500	{object}	map[string]string	"Внутренняя ошибка сервера"
+//	@Router			/anime/{id} [get]
 func (c *AnimeController) GetAnimeByID(ctx *gin.Context) {
 	malID, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 	if err != nil {
@@ -137,17 +137,17 @@ func (c *AnimeController) GetAnimeByID(ctx *gin.Context) {
 }
 
 // SearchAnime godoc
-// @Summary Поиск аниме по запросу
-// @Description Выполняет поиск аниме по заданному запросу с пагинацией
-// @Tags anime
-// @Accept json
-// @Produce json
-// @Param query query string true "Поисковый запрос"
-// @Param page query int false "Номер страницы" default(1) minimum(1)
-// @Param limit query int false "Количество результатов на странице" default(10) minimum(1) maximum(50)
-// @Success 200 {object} dtos.AnimeListResponse
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Router /anime/search [get]
+//	@Summary		Поиск аниме по запросу
+//	@Description	Выполняет поиск аниме по заданному запросу с пагинацией
+//	@Tags			anime
+//	@Accept			json
+//	@Produce		json
+//	@Param			query	query		string	true	"Поисковый запрос"
+//	@Param			page	query		int		false	"Номер страницы"						default(1)	minimum(1)
+//	@Param			limit	query		int		false	"Количество результатов на странице"	default(10)	minimum(1)	maximum(50)
+//	@Success		200		{object}	dtos.AnimeListResponse
+//	@Failure		500		{object}	map[string]string	"Внутренняя ошибка сервера"
+//	@Router			/anime/search [get]
 func (c *AnimeController) SearchAnime(ctx *gin.Context) {
 	query := ctx.Query("query")
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
@@ -212,16 +212,16 @@ func (c *AnimeController) SearchAnime(ctx *gin.Context) {
 }
 
 // GetTopAnime godoc
-// @Summary Получить список популярных аниме
-// @Description Возвращает список популярных аниме с пагинацией
-// @Tags anime
-// @Accept json
-// @Produce json
-// @Param page query int false "Номер страницы" default(1) minimum(1)
-// @Param limit query int false "Количество результатов на странице" default(10) minimum(1) maximum(50)
-// @Success 200 {object} dtos.AnimeListResponse
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Router /anime/top [get]
+//	@Summary		Получить список популярных аниме
+//	@Description	Возвращает список популярных аниме с пагинацией
+//	@Tags			anime
+//	@Accept			json
+//	@Produce		json
+//	@Param			page	query		int	false	"Номер страницы"						default(1)	minimum(1)
+//	@Param			limit	query		int	false	"Количество результатов на странице"	default(10)	minimum(1)	maximum(50)
+//	@Success		200		{object}	dtos.AnimeListResponse
+//	@Failure		500		{object}	map[string]string	"Внутренняя ошибка сервера"
+//	@Router			/anime/top [get]
 func (c *AnimeController) GetTopAnime(ctx *gin.Context) {
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
@@ -284,19 +284,19 @@ func (c *AnimeController) GetTopAnime(ctx *gin.Context) {
 }
 
 // GetSeasonalAnime godoc
-// @Summary Получить список сезонных аниме
-// @Description Возвращает список аниме для указанного сезона и года
-// @Tags anime
-// @Accept json
-// @Produce json
-// @Param year path string true "Год (например, 2023)"
-// @Param season path string true "Сезон (winter, spring, summer, fall)"
-// @Param page query int false "Номер страницы" default(1) minimum(1)
-// @Param limit query int false "Количество результатов на странице" default(10) minimum(1) maximum(50)
-// @Success 200 {object} dtos.AnimeListResponse
-// @Failure 400 {object} map[string]string "Неверные параметры запроса"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Router /anime/seasonal/{year}/{season} [get]
+//	@Summary		Получить список сезонных аниме
+//	@Description	Возвращает список аниме для указанного сезона и года
+//	@Tags			anime
+//	@Accept			json
+//	@Produce		json
+//	@Param			year	path		string	true	"Год (например, 2023)"
+//	@Param			season	path		string	true	"Сезон (winter, spring, summer, fall)"
+//	@Param			page	query		int		false	"Номер страницы"						default(1)	minimum(1)
+//	@Param			limit	query		int		false	"Количество результатов на странице"	default(10)	minimum(1)	maximum(50)
+//	@Success		200		{object}	dtos.AnimeListResponse
+//	@Failure		400		{object}	map[string]string	"Неверные параметры запроса"
+//	@Failure		500		{object}	map[string]string	"Внутренняя ошибка сервера"
+//	@Router			/anime/seasonal/{year}/{season} [get]
 func (c *AnimeController) GetSeasonalAnime(ctx *gin.Context) {
 	year := ctx.Param("year")
 	season := ctx.Param("season")
@@ -375,18 +375,18 @@ func (c *AnimeController) GetSeasonalAnime(ctx *gin.Context) {
 }
 
 // GetAnimeRecommendations godoc
-// @Summary Получить рекомендации аниме
-// @Description Возвращает список рекомендаций аниме на основе указанного MAL ID
-// @Tags anime
-// @Accept json
-// @Produce json
-// @Param id path int true "MAL ID аниме для получения рекомендаций"
-// @Param page query int false "Номер страницы" default(1) minimum(1)
-// @Param limit query int false "Количество результатов на странице" default(10) minimum(1) maximum(50)
-// @Success 200 {object} dtos.AnimeListResponse
-// @Failure 400 {object} map[string]string "Неверный ID аниме"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Router /anime/{id}/recommendations [get]
+//	@Summary		Получить рекомендации аниме
+//	@Description	Возвращает список рекомендаций аниме на основе указанного MAL ID
+//	@Tags			anime
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int	true	"MAL ID аниме для получения рекомендаций"
+//	@Param			page	query		int	false	"Номер страницы"						default(1)	minimum(1)
+//	@Param			limit	query		int	false	"Количество результатов на странице"	default(10)	minimum(1)	maximum(50)
+//	@Success		200		{object}	dtos.AnimeListResponse
+//	@Failure		400		{object}	map[string]string	"Неверный ID аниме"
+//	@Failure		500		{object}	map[string]string	"Внутренняя ошибка сервера"
+//	@Router			/anime/{id}/recommendations [get]
 func (c *AnimeController) GetAnimeRecommendations(ctx *gin.Context) {
 	malID, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 	if err != nil {
@@ -436,19 +436,19 @@ func (c *AnimeController) GetAnimeRecommendations(ctx *gin.Context) {
 }
 
 // GetUserAnimeList godoc
-// @Summary Получить список аниме пользователя
-// @Description Возвращает список аниме пользователя с возможностью фильтрации по статусу
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param user_id path int true "ID пользователя"
-// @Param status query string false "Статус аниме (watched, plan_to_watch, watching, waiting)"
-// @Param page query int false "Номер страницы" default(1) minimum(1)
-// @Param limit query int false "Количество результатов на странице" default(10) minimum(1) maximum(50)
-// @Success 200 {object} dtos.UserAnimeListResponse
-// @Failure 400 {object} map[string]string "Неверный ID пользователя"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Router /users/{user_id}/anime [get]
+//	@Summary		Получить список аниме пользователя
+//	@Description	Возвращает список аниме пользователя с возможностью фильтрации по статусу
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			user_id	path		int		true	"ID пользователя"
+//	@Param			status	query		string	false	"Статус аниме (watched, plan_to_watch, watching, waiting)"
+//	@Param			page	query		int		false	"Номер страницы"						default(1)	minimum(1)
+//	@Param			limit	query		int		false	"Количество результатов на странице"	default(10)	minimum(1)	maximum(50)
+//	@Success		200		{object}	dtos.UserAnimeListResponse
+//	@Failure		400		{object}	map[string]string	"Неверный ID пользователя"
+//	@Failure		500		{object}	map[string]string	"Внутренняя ошибка сервера"
+//	@Router			/users/{user_id}/anime [get]
 func (c *AnimeController) GetUserAnimeList(ctx *gin.Context) {
 	userIDStr := ctx.Param("user_id")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
@@ -519,18 +519,18 @@ func (c *AnimeController) GetUserAnimeList(ctx *gin.Context) {
 }
 
 // AddAnimeToUserList godoc
-// @Summary Добавить аниме в список пользователя
-// @Description Добавляет аниме в список пользователя с указанным статусом
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param user_id path int true "ID пользователя"
-// @Param anime body dtos.AddAnimeRequest true "Информация о добавляемом аниме"
-// @Success 201 {object} map[string]string "Успешное добавление"
-// @Failure 400 {object} map[string]string "Неверные входные данные"
-// @Failure 404 {object} map[string]string "Аниме не найдено"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Router /users/{user_id}/anime [post]
+//	@Summary		Добавить аниме в список пользователя
+//	@Description	Добавляет аниме в список пользователя с указанным статусом
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			user_id	path		int						true	"ID пользователя"
+//	@Param			anime	body		dtos.AddAnimeRequest	true	"Информация о добавляемом аниме"
+//	@Success		201		{object}	map[string]string		"Успешное добавление"
+//	@Failure		400		{object}	map[string]string		"Неверные входные данные"
+//	@Failure		404		{object}	map[string]string		"Аниме не найдено"
+//	@Failure		500		{object}	map[string]string		"Внутренняя ошибка сервера"
+//	@Router			/users/{user_id}/anime [post]
 func (c *AnimeController) AddAnimeToUserList(ctx *gin.Context) {
 	userIDStr := ctx.Param("user_id")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
@@ -560,18 +560,18 @@ func (c *AnimeController) AddAnimeToUserList(ctx *gin.Context) {
 }
 
 // RemoveAnimeFromUserList godoc
-// @Summary Удалить аниме из списка пользователя
-// @Description Удаляет аниме из списка пользователя
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param user_id path int true "ID пользователя"
-// @Param anime_id path int true "MAL ID аниме"
-// @Success 200 {object} map[string]string "Успешное удаление"
-// @Failure 400 {object} map[string]string "Неверные входные данные"
-// @Failure 404 {object} map[string]string "Запись не найдена"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Router /users/{user_id}/anime/{anime_id} [delete]
+//	@Summary		Удалить аниме из списка пользователя
+//	@Description	Удаляет аниме из списка пользователя
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			user_id		path		int					true	"ID пользователя"
+//	@Param			anime_id	path		int					true	"MAL ID аниме"
+//	@Success		200			{object}	map[string]string	"Успешное удаление"
+//	@Failure		400			{object}	map[string]string	"Неверные входные данные"
+//	@Failure		404			{object}	map[string]string	"Запись не найдена"
+//	@Failure		500			{object}	map[string]string	"Внутренняя ошибка сервера"
+//	@Router			/users/{user_id}/anime/{anime_id} [delete]
 func (c *AnimeController) RemoveAnimeFromUserList(ctx *gin.Context) {
 	userIDStr := ctx.Param("user_id")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
@@ -608,19 +608,19 @@ func (c *AnimeController) RemoveAnimeFromUserList(ctx *gin.Context) {
 }
 
 // UpdateUserAnimeStatus godoc
-// @Summary Обновить статус аниме в списке пользователя
-// @Description Обновляет статус аниме в списке пользователя
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param user_id path int true "ID пользователя"
-// @Param anime_id path int true "MAL ID аниме"
-// @Param status body dtos.UpdateStatusRequest true "Новый статус аниме"
-// @Success 200 {object} map[string]string "Успешное обновление"
-// @Failure 400 {object} map[string]string "Неверные входные данные"
-// @Failure 404 {object} map[string]string "Запись не найдена"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Router /users/{user_id}/anime/{anime_id}/status [put]
+//	@Summary		Обновить статус аниме в списке пользователя
+//	@Description	Обновляет статус аниме в списке пользователя
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			user_id		path		int							true	"ID пользователя"
+//	@Param			anime_id	path		int							true	"MAL ID аниме"
+//	@Param			status		body		dtos.UpdateStatusRequest	true	"Новый статус аниме"
+//	@Success		200			{object}	map[string]string			"Успешное обновление"
+//	@Failure		400			{object}	map[string]string			"Неверные входные данные"
+//	@Failure		404			{object}	map[string]string			"Запись не найдена"
+//	@Failure		500			{object}	map[string]string			"Внутренняя ошибка сервера"
+//	@Router			/users/{user_id}/anime/{anime_id}/status [put]
 func (c *AnimeController) UpdateUserAnimeStatus(ctx *gin.Context) {
 	userIDStr := ctx.Param("user_id")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
@@ -663,19 +663,19 @@ func (c *AnimeController) UpdateUserAnimeStatus(ctx *gin.Context) {
 }
 
 // UpdateUserAnimeEpisodes godoc
-// @Summary Обновить количество просмотренных эпизодов
-// @Description Обновляет количество просмотренных эпизодов аниме в списке пользователя
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param user_id path int true "ID пользователя"
-// @Param anime_id path int true "MAL ID аниме"
-// @Param episodes body dtos.UpdateEpisodesRequest true "Новое количество просмотренных эпизодов"
-// @Success 200 {object} map[string]string "Успешное обновление"
-// @Failure 400 {object} map[string]string "Неверные входные данные"
-// @Failure 404 {object} map[string]string "Запись не найдена"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Router /users/{user_id}/anime/{anime_id}/episodes [put]
+//	@Summary		Обновить количество просмотренных эпизодов
+//	@Description	Обновляет количество просмотренных эпизодов аниме в списке пользователя
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			user_id		path		int							true	"ID пользователя"
+//	@Param			anime_id	path		int							true	"MAL ID аниме"
+//	@Param			episodes	body		dtos.UpdateEpisodesRequest	true	"Новое количество просмотренных эпизодов"
+//	@Success		200			{object}	map[string]string			"Успешное обновление"
+//	@Failure		400			{object}	map[string]string			"Неверные входные данные"
+//	@Failure		404			{object}	map[string]string			"Запись не найдена"
+//	@Failure		500			{object}	map[string]string			"Внутренняя ошибка сервера"
+//	@Router			/users/{user_id}/anime/{anime_id}/episodes [put]
 func (c *AnimeController) UpdateUserAnimeEpisodes(ctx *gin.Context) {
 	userIDStr := ctx.Param("user_id")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
@@ -719,19 +719,19 @@ func (c *AnimeController) UpdateUserAnimeEpisodes(ctx *gin.Context) {
 }
 
 // UpdateUserAnimeRating godoc
-// @Summary Обновить рейтинг аниме
-// @Description Обновляет пользовательский рейтинг аниме в списке пользователя
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param user_id path int true "ID пользователя"
-// @Param anime_id path int true "MAL ID аниме"
-// @Param rating body dtos.UpdateRatingRequest true "Новый рейтинг аниме (от 0 до 10)"
-// @Success 200 {object} map[string]string "Успешное обновление"
-// @Failure 400 {object} map[string]string "Неверные входные данные"
-// @Failure 404 {object} map[string]string "Запись не найдена"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Router /users/{user_id}/anime/{anime_id}/rating [put]
+//	@Summary		Обновить рейтинг аниме
+//	@Description	Обновляет пользовательский рейтинг аниме в списке пользователя
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			user_id		path		int							true	"ID пользователя"
+//	@Param			anime_id	path		int							true	"MAL ID аниме"
+//	@Param			rating		body		dtos.UpdateRatingRequest	true	"Новый рейтинг аниме (от 0 до 10)"
+//	@Success		200			{object}	map[string]string			"Успешное обновление"
+//	@Failure		400			{object}	map[string]string			"Неверные входные данные"
+//	@Failure		404			{object}	map[string]string			"Запись не найдена"
+//	@Failure		500			{object}	map[string]string			"Внутренняя ошибка сервера"
+//	@Router			/users/{user_id}/anime/{anime_id}/rating [put]
 func (c *AnimeController) UpdateUserAnimeRating(ctx *gin.Context) {
 	userIDStr := ctx.Param("user_id")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)
@@ -781,16 +781,16 @@ func (c *AnimeController) UpdateUserAnimeRating(ctx *gin.Context) {
 }
 
 // GetUserAnimeStats godoc
-// @Summary Получить статистику пользователя по аниме
-// @Description Возвращает статистику пользователя по просмотру аниме
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param user_id path int true "ID пользователя"
-// @Success 200 {object} dtos.StatsResponse "Статистика пользователя"
-// @Failure 400 {object} map[string]string "Неверный ID пользователя"
-// @Failure 500 {object} map[string]string "Внутренняя ошибка сервера"
-// @Router /users/{user_id}/anime/stats [get]
+//	@Summary		Получить статистику пользователя по аниме
+//	@Description	Возвращает статистику пользователя по просмотру аниме
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			user_id	path		int					true	"ID пользователя"
+//	@Success		200		{object}	dtos.StatsResponse	"Статистика пользователя"
+//	@Failure		400		{object}	map[string]string	"Неверный ID пользователя"
+//	@Failure		500		{object}	map[string]string	"Внутренняя ошибка сервера"
+//	@Router			/users/{user_id}/anime/stats [get]
 func (c *AnimeController) GetUserAnimeStats(ctx *gin.Context) {
 	userIDStr := ctx.Param("user_id")
 	userID, err := strconv.ParseUint(userIDStr, 10, 32)

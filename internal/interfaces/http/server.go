@@ -35,9 +35,7 @@ func NewServer(
     authMiddleware middleware.AuthMiddleware,
 ) *Server {
     router := gin.New()
-    if config.App.Environment == "development" {
-        router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-    }
+    setupSwagger(router, config)
     
     // Настройка CORS
     router.Use(cors.New(cors.Config{
@@ -53,12 +51,6 @@ func NewServer(
         MaxAge: 12 * time.Hour,
     }))
 
-    docs.SwaggerInfo.Title = "Anime Service API"
-	docs.SwaggerInfo.Description = "API для сервиса аниме и управления пользовательскими списками"
-	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = "otaku-go-fhwhlg-70b18b-85-193-88-34.traefik.me" 
-	docs.SwaggerInfo.BasePath = "/api"
-	docs.SwaggerInfo.Schemes = []string{"https"}
     router.Use(gin.Recovery())
     service := &routes.Service{
         AuthController: authConttroler,
@@ -105,4 +97,21 @@ func (s *Server) Start() error {
     
     log.Println("Server exited properly")
     return nil
+}
+
+func setupSwagger(router *gin.Engine, config *config.Config) {
+    docs.SwaggerInfo.Title = "Anime Service API"
+    docs.SwaggerInfo.Description = "API для сервиса аниме и управления пользовательскими списками"
+    docs.SwaggerInfo.Version = "1.0"
+    docs.SwaggerInfo.BasePath = "/api"
+    
+    if config.App.Environment == "development" {
+        docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%d", config.HTTP.Port)
+        docs.SwaggerInfo.Schemes = []string{"http"}
+    } else {
+        docs.SwaggerInfo.Host = "otaku-go-fhwhlg-70b18b-85-193-88-34.traefik.me"
+        docs.SwaggerInfo.Schemes = []string{"https"}
+    }
+    
+    router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
