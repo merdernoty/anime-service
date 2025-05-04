@@ -28,7 +28,7 @@ const (
 	CookieMaxAge           = 30 * 24 * 3600 // 30 days
 	CookieSecure           = true
 	CookieHTTPOnly         = true
-	CookieSameSite         = http.SameSiteLaxMode
+	CookieSameSiteNone     = http.SameSiteNoneMode 
 )
 
 type AuthServiceImpl struct {
@@ -200,21 +200,24 @@ func (s *AuthServiceImpl) RefreshToken(ctx *gin.Context, r *http.Request, w http
 }
 
 func (s *AuthServiceImpl) setRefreshTokenCookie(ctx *gin.Context, refreshToken string) {
+	domain := ".traefik.me"
+
+	ctx.SetSameSite(CookieSameSiteNone)
 	ctx.SetCookie(
 		RefreshTokenCookieName,
 		refreshToken,
 		CookieMaxAge,
 		CookiePath,
-		"",
+		domain,
 		CookieSecure,
 		CookieHTTPOnly,
 	)
 
-	if CookieSameSite == http.SameSiteLaxMode {
+	if CookieSameSiteNone == http.SameSiteLaxMode {
 		ctx.Header("Set-Cookie", ctx.Writer.Header().Get("Set-Cookie")+"; SameSite=Lax")
-	} else if CookieSameSite == http.SameSiteStrictMode {
+	} else if CookieSameSiteNone == http.SameSiteStrictMode {
 		ctx.Header("Set-Cookie", ctx.Writer.Header().Get("Set-Cookie")+"; SameSite=Strict")
-	} else if CookieSameSite == http.SameSiteNoneMode {
+	} else if CookieSameSiteNone == http.SameSiteNoneMode {
 		ctx.Header("Set-Cookie", ctx.Writer.Header().Get("Set-Cookie")+"; SameSite=None")
 	}
 }
